@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Run ROUGE on the duc2004 data set
+# Run ROUGE on the duc2004 data set.
+# The output is written to duc2004/eval/t1.rouge.out.
 
 CWD=$(pwd)
 ROUGE_HOME=$CWD/rouge-1.5.5
