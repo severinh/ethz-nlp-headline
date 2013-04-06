@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Run ROUGE on the duc2004 data set
+
+CWD=$(pwd)
+ROUGE_HOME=$CWD/rouge-1.5.5
+ROUGE_EXE=$ROUGE_HOME/ROUGE-1.5.5.pl
+EVAL_DIR=duc2004/eval
+EVAL_CONFIG=t1.rouge.in
+EVAL_OUTPUT=t1.rouge.out
+
+cd $EVAL_DIR
+$ROUGE_EXE -e $ROUGE_HOME/data \
+    -a -c 95 -b 75 -m -n 4 -w 1.2 \
+    $EVAL_CONFIG > $EVAL_OUTPUT
