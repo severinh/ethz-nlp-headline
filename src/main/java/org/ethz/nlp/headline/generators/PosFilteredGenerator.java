@@ -28,7 +28,7 @@ public class PosFilteredGenerator implements Generator {
 
 	@Override
 	public String getId() {
-		return "POS-FILTERED";
+		return "POS-F";
 	}
 
 	@Override

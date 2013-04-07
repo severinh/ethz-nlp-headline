@@ -8,7 +8,7 @@ public class BaselineGenerator implements Generator {
 
 	@Override
 	public String getId() {
-		return "BASELINE";
+		return "BASE";
 	}
 
 	@Override
