@@ -11,34 +11,37 @@ import java.util.Map;
 import org.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import org.ethz.nlp.headline.generators.BaselineGenerator;
 import org.ethz.nlp.headline.generators.Generator;
+import org.ethz.nlp.headline.generators.PosFilteredGenerator;
 
 public class Main {
 
 	private static final String DUC_2004_ROOT = "duc2004";
 	private static final String EVALUATION_CONFIG_FILENAME = "evaluation.conf";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ClassNotFoundException,
+			IOException {
 		Path datasetRoot = FileSystems.getDefault().getPath(DUC_2004_ROOT);
 		Dataset dataset = new Duc2004Dataset(datasetRoot);
 		List<Task> tasks = dataset.getTasks();
 		List<Generator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator());
+		generators.add(new PosFilteredGenerator());
 		Map<Task, List<Peer>> peersMap = new HashMap<>();
 		for (Task task : tasks) {
-			try {
-				List<Peer> peers = new ArrayList<>();
-				for (Generator generator : generators) {
-					String content = task.getDocument().load();
-					String headline = generator.generate(content);
-					Peer peer = dataset.makePeer(task, generator.getId());
+			List<Peer> peers = new ArrayList<>();
+			for (Generator generator : generators) {
+				String content = task.getDocument().load();
+				String headline = generator.generate(content);
+				Peer peer = dataset.makePeer(task, generator.getId());
+				try {
 					peer.store(headline);
-					peers.add(peer);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				peersMap.put(task, peers);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				peers.add(peer);
 			}
+			peersMap.put(task, peers);
 		}
 
 		EvaluationConfig config = new EvaluationConfig(dataset);
