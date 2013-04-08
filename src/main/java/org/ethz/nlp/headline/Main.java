@@ -28,9 +28,9 @@ public class Main {
 		generators.add(new PosFilteredGenerator());
 		Map<Task, List<Peer>> peersMap = new HashMap<>();
 		for (Task task : tasks) {
+			String content = task.getDocument().load();
 			List<Peer> peers = new ArrayList<>();
 			for (Generator generator : generators) {
-				String content = task.getDocument().load();
 				String headline = generator.generate(content);
 				Peer peer = dataset.makePeer(task, generator.getId());
 				try {
