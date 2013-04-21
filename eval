@@ -10,5 +10,5 @@ EVAL_CONFIG=evaluation.conf
 EVAL_OUTPUT=evaluation.out
 
 $ROUGE_EXE -e $ROUGE_EVAL_HOME \
-    -a -c 95 -b 500 -m -n 2 \
+    -a -x -c 95 -b 500 -m -n 2 \
     $EVAL_CONFIG > $EVAL_OUTPUT
