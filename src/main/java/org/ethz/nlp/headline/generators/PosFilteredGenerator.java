@@ -25,7 +25,7 @@ public class PosFilteredGenerator implements Generator {
 
 	public PosFilteredGenerator() throws ClassNotFoundException, IOException {
 		Properties props = new Properties();
-		props.put("annotators", "pos");
+		props.put("annotators", "tokenize, ssplit, pos");
 		pipeline = new StanfordCoreNLP(props);
 
 		// Temporarily create a tagger to gain access to the list of open tags
