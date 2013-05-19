@@ -28,9 +28,9 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<Generator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator(dataset));
-		generators.add(new PosFilteredGenerator(dataset));
-		generators.add(new TfIdfWordsGenerator(dataset));
+		// generators.add(new BaselineGenerator(dataset));
+		// generators.add(new PosFilteredGenerator(dataset));
+		// generators.add(new TfIdfWordsGenerator(dataset));
 		generators.add(new TfIdfSentenceGenerator(dataset));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();

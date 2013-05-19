@@ -34,9 +34,11 @@ public class TfIdfSentenceGenerator extends TfIdfGenerator {
 		Annotation annotation = annotations.get(documentId);
 
 		CoreMap bestSentence = null;
-		double bestSentenceScore = Float.MIN_VALUE;
+		double bestSentenceScore = Double.MIN_VALUE;
+		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
+		for (int i = 0; i < sentences.size(); i++) {
+			CoreMap sentence = sentences.get(i);
 
-		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			double sentenceScore = 0.0;
 			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
 			for (CoreLabel label : labels) {
@@ -45,6 +47,7 @@ public class TfIdfSentenceGenerator extends TfIdfGenerator {
 				sentenceScore += tfIdf;
 			}
 			sentenceScore /= labels.size();
+
 			if (bestSentence == null || bestSentenceScore < sentenceScore) {
 				bestSentence = sentence;
 				bestSentenceScore = sentenceScore;
@@ -53,5 +56,4 @@ public class TfIdfSentenceGenerator extends TfIdfGenerator {
 
 		return bestSentence.toString();
 	}
-
 }
