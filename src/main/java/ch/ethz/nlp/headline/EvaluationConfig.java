@@ -4,12 +4,11 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Properties;
-import java.util.Map.Entry;
-
 import javax.xml.transform.OutputKeys;
+
+import com.google.common.collect.Multimap;
 import com.jamesmurty.utils.XMLBuilder;
 
 public class EvaluationConfig {
@@ -26,16 +25,14 @@ public class EvaluationConfig {
 		this.dataset = dataset;
 	}
 
-	public void write(Path configPath, Map<Task, List<Peer>> peersMap) {
+	public void write(Path configPath, Multimap<Task, Peer> peersMap) {
 		Path peerRoot = dataset.getPeerRoot();
 		Path modelRoot = dataset.getModelRoot();
-
 		try {
 			XMLBuilder builder = XMLBuilder.create("ROUGE_EVAL");
-			for (Entry<Task, List<Peer>> entry : peersMap.entrySet()) {
-				Task task = entry.getKey();
+			for (Task task : peersMap.keySet()) {
 				Document document = task.getDocument();
-				List<Peer> peers = entry.getValue();
+				Collection<Peer> peers = peersMap.get(task);
 				XMLBuilder evalBuilder = builder.elem("EVAL");
 				evalBuilder.attr("ID", document.getId().toString());
 				evalBuilder.elem("PEER-ROOT").text(peerRoot.toString());
@@ -66,4 +63,5 @@ public class EvaluationConfig {
 			System.exit(-1);
 		}
 	}
+
 }

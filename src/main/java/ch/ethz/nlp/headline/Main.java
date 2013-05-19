@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
@@ -32,10 +33,9 @@ public class Main {
 		generators.add(new TfIdfWordsGenerator(dataset));
 		generators.add(new TfIdfSentenceGenerator(dataset));
 
-		Map<Task, List<Peer>> peersMap = new HashMap<>();
+		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		for (Task task : tasks) {
 			Document document = task.getDocument();
-			List<Peer> peers = new ArrayList<>();
 			for (Generator generator : generators) {
 				String headline = generator.generate(document);
 				Peer peer = dataset.makePeer(task, generator.getId());
@@ -45,9 +45,8 @@ public class Main {
 					System.exit(-1);
 					e.printStackTrace();
 				}
-				peers.add(peer);
+				peersMap.put(task, peer);
 			}
-			peersMap.put(task, peers);
 		}
 
 		EvaluationConfig config = new EvaluationConfig(dataset);
