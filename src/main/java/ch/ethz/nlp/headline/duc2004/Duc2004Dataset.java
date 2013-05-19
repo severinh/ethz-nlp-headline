@@ -20,6 +20,9 @@ public class Duc2004Dataset extends Dataset {
 	private final Path modelRoot;
 	private final Path peerRoot;
 
+	private List<Document> documents;
+	private List<Model> models;
+
 	public Duc2004Dataset(Path root) {
 		documentRoot = root.resolve("docs");
 		modelRoot = root.resolve("eval").resolve("models").resolve("1");
@@ -43,37 +46,41 @@ public class Duc2004Dataset extends Dataset {
 
 	@Override
 	public List<Document> getDocuments() {
-		List<Document> result = new ArrayList<>();
-		try (DirectoryStream<Path> setStream = Files
-				.newDirectoryStream(getDocumentRoot())) {
-			for (Path documentSetPath : setStream) {
-				try (DirectoryStream<Path> docStream = Files
-						.newDirectoryStream(documentSetPath)) {
-					for (Path documentPath : docStream) {
-						result.add(new Duc2004Document(documentPath));
+		if (documents == null) {
+			documents = new ArrayList<>();
+			try (DirectoryStream<Path> setStream = Files
+					.newDirectoryStream(getDocumentRoot())) {
+				for (Path documentSetPath : setStream) {
+					try (DirectoryStream<Path> docStream = Files
+							.newDirectoryStream(documentSetPath)) {
+						for (Path documentPath : docStream) {
+							documents.add(new Duc2004Document(documentPath));
+						}
 					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(-1);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
 		}
-		return result;
+		return documents;
 	}
 
 	@Override
 	public List<Model> getModels() {
-		List<Model> result = new ArrayList<>();
-		try (DirectoryStream<Path> stream = Files
-				.newDirectoryStream(getModelRoot())) {
-			for (Path modelPath : stream) {
-				result.add(new Duc2004Model(modelPath));
+		if (models == null) {
+			models = new ArrayList<>();
+			try (DirectoryStream<Path> stream = Files
+					.newDirectoryStream(getModelRoot())) {
+				for (Path modelPath : stream) {
+					models.add(new Duc2004Model(modelPath));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(-1);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
 		}
-		return result;
+		return models;
 	}
 
 	@Override

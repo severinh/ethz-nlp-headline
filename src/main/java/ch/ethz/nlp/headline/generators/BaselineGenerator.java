@@ -1,25 +1,19 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
-import java.util.Properties;
-
+import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
  * Generator that simply extracts the first sentence from the given text.
  */
-public class BaselineGenerator implements Generator {
+public class BaselineGenerator extends CoreNLPGenerator {
 
-	private final StanfordCoreNLP pipeline;
-
-	public BaselineGenerator() {
-		Properties props = new Properties();
-		props.put("annotators", "tokenize, ssplit");
-		pipeline = new StanfordCoreNLP(props);
+	public BaselineGenerator(Dataset dataset) throws IOException {
+		super(dataset, "ssplit");
 	}
 
 	@Override
@@ -29,10 +23,7 @@ public class BaselineGenerator implements Generator {
 
 	@Override
 	public String generate(Document document) throws IOException {
-		String content = document.load();
-		Annotation annotation = new Annotation(content);
-		pipeline.annotate(annotation);
-
+		Annotation annotation = annotations.get(document.getId());
 		CoreMap sentenceMap = annotation.get(SentencesAnnotation.class).get(0);
 		return sentenceMap.toString();
 	}

@@ -1,40 +1,22 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import ch.ethz.nlp.headline.Dataset;
-import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.DocumentId;
+import java.util.Map.Entry;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import ch.ethz.nlp.headline.Dataset;
+import ch.ethz.nlp.headline.DocumentId;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.BinaryHeapPriorityQueue;
 import edu.stanford.nlp.util.PriorityQueue;
-import edu.stanford.nlp.util.StringUtils;
 
-public class TfIdfGenerator implements Generator {
-
-	/**
-	 * The maximum number of characters in the generated headline. The generator
-	 * will greedily build the headline from the terms with the highest TF-IDF
-	 * score until the limit is reached.
-	 */
-	private static final int MAX_LENGTH = 100;
-
-	private final StanfordCoreNLP pipeline;
+public abstract class TfIdfGenerator extends CoreNLPGenerator {
 
 	/**
 	 * For each term, stores the collection of the IDs of all documents in which
@@ -42,51 +24,19 @@ public class TfIdfGenerator implements Generator {
 	 */
 	private final Multimap<String, DocumentId> docFreqs;
 
-	/**
-	 * Map the ID of each document to the document's annotation.
-	 */
-	private final Map<DocumentId, Annotation> annotations;
-
 	public TfIdfGenerator(Dataset dataset, String... annotators)
 			throws IOException {
-		List<String> allAnnotators = new ArrayList<>();
-		allAnnotators.add("tokenize");
-		allAnnotators.addAll(Arrays.asList(annotators));
-
-		Properties props = new Properties();
-		props.put("annotators", StringUtils.join(allAnnotators, ","));
-		pipeline = new StanfordCoreNLP(props);
+		super(dataset, annotators);
 
 		docFreqs = HashMultimap.create();
-		annotations = new HashMap<>();
 
-		addDocuments(dataset.getDocuments());
-	}
-
-	private void addDocument(Document document) throws IOException {
-		String content = document.load();
-		Annotation annotation = new Annotation(content);
-		pipeline.annotate(annotation);
-
-		annotations.put(document.getId(), annotation);
-		for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
-			docFreqs.put(label.word(), document.getId());
+		for (Entry<DocumentId, Annotation> entry : annotations.entrySet()) {
+			DocumentId documentId = entry.getKey();
+			Annotation annotation = entry.getValue();
+			for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
+				docFreqs.put(label.word(), documentId);
+			}
 		}
-	}
-
-	private void addDocuments(List<Document> documents) throws IOException {
-		for (Document document : documents) {
-			addDocument(document);
-		}
-	}
-
-	@Override
-	public String getId() {
-		return "TF-IDF";
-	}
-
-	protected Annotation getAnnotation(DocumentId documentId) {
-		return annotations.get(documentId);
 	}
 
 	/**
@@ -127,24 +77,6 @@ public class TfIdfGenerator implements Generator {
 		}
 
 		return tfIdfMap;
-	}
-
-	@Override
-	public String generate(Document document) throws IOException {
-		PriorityQueue<String> tfIdfMap = getTfIdfMap(document.getId());
-
-		// Build the headline from the words with the highest tf-idf score
-		List<String> sortedTerms = tfIdfMap.toSortedList();
-		StringBuilder builder = new StringBuilder();
-		for (String sortedTerm : sortedTerms) {
-			if (builder.length() + sortedTerm.length() > MAX_LENGTH) {
-				break;
-			}
-			builder.append(" " + sortedTerm);
-		}
-
-		String result = builder.toString().trim();
-		return result;
 	}
 
 }

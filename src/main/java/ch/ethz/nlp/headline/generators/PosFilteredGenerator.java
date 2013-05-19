@@ -3,29 +3,26 @@ package ch.ethz.nlp.headline.generators;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
+import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
-public class PosFilteredGenerator implements Generator {
+public class PosFilteredGenerator extends CoreNLPGenerator {
 
-	private final StanfordCoreNLP pipeline;
 	private final Set<String> openTags;
 
-	public PosFilteredGenerator() throws ClassNotFoundException, IOException {
-		Properties props = new Properties();
-		props.put("annotators", "tokenize, ssplit, pos");
-		pipeline = new StanfordCoreNLP(props);
+	public PosFilteredGenerator(Dataset dataset) throws IOException,
+			ClassNotFoundException {
+		super(dataset, "ssplit", "pos");
 
 		// Temporarily create a tagger to gain access to the list of open tags
 		MaxentTagger tagger = new MaxentTagger(MaxentTagger.DEFAULT_JAR_PATH);
@@ -39,9 +36,7 @@ public class PosFilteredGenerator implements Generator {
 
 	@Override
 	public String generate(Document document) throws IOException {
-		String content = document.load();
-		Annotation annotation = new Annotation(content);
-		pipeline.annotate(annotation);
+		Annotation annotation = annotations.get(document.getId());
 
 		CoreMap sentenceMap = annotation.get(SentencesAnnotation.class).get(0);
 		List<CoreLabel> labels = sentenceMap.get(TokensAnnotation.class);

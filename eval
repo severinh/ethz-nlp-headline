@@ -3,6 +3,8 @@
 # Run ROUGE on the duc2004 data set.
 # The output is written to duc2004/eval/t1.rouge.out.
 
+mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.Main"
+
 ROUGE_HOME=$(pwd)/rouge-1.5.5
 ROUGE_EXE=$ROUGE_HOME/ROUGE-1.5.5.pl
 ROUGE_EVAL_HOME=$ROUGE_HOME/data # As suggested by ROUGE

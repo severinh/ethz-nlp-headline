@@ -31,7 +31,7 @@ public class TfIdfSentenceGenerator extends TfIdfGenerator {
 	public String generate(Document document) {
 		DocumentId documentId = document.getId();
 		PriorityQueue<String> tfIdfMap = getTfIdfMap(documentId);
-		Annotation annotation = getAnnotation(documentId);
+		Annotation annotation = annotations.get(documentId);
 
 		CoreMap bestSentence = null;
 		double bestSentenceScore = Float.MIN_VALUE;

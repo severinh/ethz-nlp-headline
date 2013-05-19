@@ -12,7 +12,7 @@ import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
-import ch.ethz.nlp.headline.generators.TfIdfGenerator;
+import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
 import ch.ethz.nlp.headline.generators.TfIdfSentenceGenerator;
 
 public class Main {
@@ -27,9 +27,9 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<Generator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator());
-		generators.add(new PosFilteredGenerator());
-		generators.add(new TfIdfGenerator(dataset));
+		generators.add(new BaselineGenerator(dataset));
+		generators.add(new PosFilteredGenerator(dataset));
+		generators.add(new TfIdfWordsGenerator(dataset));
 		generators.add(new TfIdfSentenceGenerator(dataset));
 
 		Map<Task, List<Peer>> peersMap = new HashMap<>();
