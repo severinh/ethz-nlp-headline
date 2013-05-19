@@ -1,10 +1,9 @@
-package org.ethz.nlp.headline.generators;
+package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import org.ethz.nlp.headline.Document;
-
+import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;

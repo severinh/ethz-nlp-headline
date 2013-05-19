@@ -1,9 +1,9 @@
-package org.ethz.nlp.headline.duc2004;
+package ch.ethz.nlp.headline.duc2004;
 
 import java.nio.file.Path;
 
-import org.ethz.nlp.headline.DocumentId;
-import org.ethz.nlp.headline.Model;
+import ch.ethz.nlp.headline.DocumentId;
+import ch.ethz.nlp.headline.Model;
 
 public class Duc2004Model implements Model {
 

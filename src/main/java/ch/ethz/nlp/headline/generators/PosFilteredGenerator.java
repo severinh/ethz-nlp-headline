@@ -1,4 +1,4 @@
-package org.ethz.nlp.headline.generators;
+package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.ethz.nlp.headline.Document;
-
+import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;

@@ -1,4 +1,4 @@
-package org.ethz.nlp.headline.generators;
+package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.ethz.nlp.headline.Dataset;
-import org.ethz.nlp.headline.Document;
-import org.ethz.nlp.headline.DocumentId;
+import ch.ethz.nlp.headline.Dataset;
+import ch.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.DocumentId;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;

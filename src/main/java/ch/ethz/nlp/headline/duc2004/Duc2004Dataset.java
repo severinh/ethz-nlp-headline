@@ -1,4 +1,4 @@
-package org.ethz.nlp.headline.duc2004;
+package ch.ethz.nlp.headline.duc2004;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.ethz.nlp.headline.Dataset;
-import org.ethz.nlp.headline.Document;
-import org.ethz.nlp.headline.DocumentId;
-import org.ethz.nlp.headline.Model;
-import org.ethz.nlp.headline.Peer;
-import org.ethz.nlp.headline.Task;
+import ch.ethz.nlp.headline.Dataset;
+import ch.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.DocumentId;
+import ch.ethz.nlp.headline.Model;
+import ch.ethz.nlp.headline.Peer;
+import ch.ethz.nlp.headline.Task;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;

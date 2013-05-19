@@ -1,4 +1,4 @@
-package org.ethz.nlp.headline;
+package ch.ethz.nlp.headline;
 
 import java.util.Objects;
 

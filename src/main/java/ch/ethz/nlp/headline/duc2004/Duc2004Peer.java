@@ -1,12 +1,12 @@
-package org.ethz.nlp.headline.duc2004;
+package ch.ethz.nlp.headline.duc2004;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import org.ethz.nlp.headline.DocumentId;
-import org.ethz.nlp.headline.Peer;
+import ch.ethz.nlp.headline.DocumentId;
+import ch.ethz.nlp.headline.Peer;
 
 public class Duc2004Peer implements Peer {
 

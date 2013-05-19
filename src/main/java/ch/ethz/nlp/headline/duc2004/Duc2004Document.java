@@ -1,4 +1,4 @@
-package org.ethz.nlp.headline.duc2004;
+package ch.ethz.nlp.headline.duc2004;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.ethz.nlp.headline.Document;
-import org.ethz.nlp.headline.DocumentId;
+import ch.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.DocumentId;
 
 public class Duc2004Document implements Document {
 

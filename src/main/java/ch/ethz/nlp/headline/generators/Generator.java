@@ -1,8 +1,8 @@
-package org.ethz.nlp.headline.generators;
+package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
 
-import org.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.Document;
 
 public interface Generator {
 

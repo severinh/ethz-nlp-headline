@@ -1,4 +1,4 @@
-package org.ethz.nlp.headline;
+package ch.ethz.nlp.headline;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.ethz.nlp.headline.duc2004.Duc2004Dataset;
-import org.ethz.nlp.headline.generators.BaselineGenerator;
-import org.ethz.nlp.headline.generators.Generator;
-import org.ethz.nlp.headline.generators.PosFilteredGenerator;
-import org.ethz.nlp.headline.generators.TfIdfGenerator;
-import org.ethz.nlp.headline.generators.TfIdfSentenceGenerator;
+import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
+import ch.ethz.nlp.headline.generators.BaselineGenerator;
+import ch.ethz.nlp.headline.generators.Generator;
+import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
+import ch.ethz.nlp.headline.generators.TfIdfGenerator;
+import ch.ethz.nlp.headline.generators.TfIdfSentenceGenerator;
 
 public class Main {
 
