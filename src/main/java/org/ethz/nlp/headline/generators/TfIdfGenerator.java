@@ -33,8 +33,16 @@ public class TfIdfGenerator implements Generator {
 
 	private final StanfordCoreNLP pipeline;
 
+	/**
+	 * For each term, stores the collection of the IDs of all documents in which
+	 * it occurs.
+	 */
 	private final Multimap<String, DocumentId> docFreqs;
-	private final Map<DocumentId, Multiset<String>> termFreqsPerDocument;
+
+	/**
+	 * Map the ID of each document to the document's annotation.
+	 */
+	private final Map<DocumentId, Annotation> annotations;
 
 	public TfIdfGenerator() {
 		Properties props = new Properties();
@@ -42,24 +50,27 @@ public class TfIdfGenerator implements Generator {
 		pipeline = new StanfordCoreNLP(props);
 
 		docFreqs = HashMultimap.create();
-		termFreqsPerDocument = new HashMap<>();
+		annotations = new HashMap<>();
 	}
 
 	private void addDocument(Document document) throws IOException {
-		Multiset<String> termFreqs = HashMultiset.create();
-		termFreqsPerDocument.put(document.getId(), termFreqs);
-
 		String content = document.load();
 		Annotation annotation = new Annotation(content);
 		pipeline.annotate(annotation);
 
+		annotations.put(document.getId(), annotation);
 		for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
-			String term = label.word();
-			termFreqs.add(term);
-			docFreqs.put(term, document.getId());
+			docFreqs.put(label.word(), document.getId());
 		}
 	}
 
+	/**
+	 * Constructs a new generator from the given data set.
+	 * 
+	 * @param dataset
+	 * @return the newly constructed generator
+	 * @throws IOException
+	 */
 	public static TfIdfGenerator of(Dataset dataset) throws IOException {
 		TfIdfGenerator generator = new TfIdfGenerator();
 		for (Document document : dataset.getDocuments()) {
@@ -75,9 +86,18 @@ public class TfIdfGenerator implements Generator {
 
 	@Override
 	public String generate(Document document) throws IOException {
-		Multiset<String> termFreqs = termFreqsPerDocument.get(document.getId());
+		// Compute the frequency of each term in the document
+		Multiset<String> termFreqs = HashMultiset.create();
+		Annotation annotation = annotations.get(document.getId());
+
+		for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
+			String term = label.word();
+			termFreqs.add(term);
+		}
+
+		// Compute the tf-idf score for each term
 		PriorityQueue<String> tfIdfMap = new BinaryHeapPriorityQueue<>();
-		double numDocs = termFreqsPerDocument.size();
+		double numDocs = annotations.size();
 
 		for (String term : termFreqs.elementSet()) {
 			double termFreq = termFreqs.count(term);
@@ -87,6 +107,7 @@ public class TfIdfGenerator implements Generator {
 			tfIdfMap.add(term, tfIdf);
 		}
 
+		// Build the headline from the words with the highest tf-idf score
 		List<String> sortedTerms = tfIdfMap.toSortedList();
 		StringBuilder builder = new StringBuilder();
 		for (String sortedTerm : sortedTerms) {
