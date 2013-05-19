@@ -5,16 +5,16 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-
 import org.ethz.nlp.headline.Dataset;
 import org.ethz.nlp.headline.DocumentId;
 import org.ethz.nlp.headline.Model;
 import org.ethz.nlp.headline.Peer;
 import org.ethz.nlp.headline.Task;
+
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 public class Duc2004Dataset implements Dataset {
 
@@ -66,21 +66,13 @@ public class Duc2004Dataset implements Dataset {
 	@Override
 	public List<Task> getTasks() {
 		List<Task> tasks = new ArrayList<>();
-		Map<DocumentId, List<Model>> modelMap = new HashMap<>();
+		Multimap<DocumentId, Model> modelMap = LinkedListMultimap.create();
 		for (Duc2004Model model : getModels()) {
-			List<Model> models = modelMap.get(model.getDocumentId());
-			if (models == null) {
-				models = new ArrayList<>();
-				modelMap.put(model.getDocumentId(), models);
-			}
-			models.add(model);
+			modelMap.put(model.getDocumentId(), model);
 		}
 		for (Duc2004Document document : getDocuments()) {
-			List<Model> models = modelMap.get(document.getId());
-			if (models == null) {
-				models = Collections.emptyList();
-			}
-			Task task = new Task(document, models);
+			Collection<Model> models = modelMap.get(document.getId());
+			Task task = new Task(document, new ArrayList<>(models));
 			tasks.add(task);
 		}
 		return tasks;
