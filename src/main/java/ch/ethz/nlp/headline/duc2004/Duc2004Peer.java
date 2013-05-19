@@ -24,31 +24,16 @@ public class Duc2004Peer implements Peer {
 		this.generatorId = generatorId;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.IPeer#getGeneratorId()
-	 */
 	@Override
 	public String getGeneratorId() {
 		return generatorId;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.IPeer#getRelativePath()
-	 */
 	@Override
 	public Path getPath() {
 		return path;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.Peer#store(java.lang.String)
-	 */
 	@Override
 	public void store(String headline) throws IOException {
 		Files.write(getPath(), headline.getBytes(), StandardOpenOption.CREATE);

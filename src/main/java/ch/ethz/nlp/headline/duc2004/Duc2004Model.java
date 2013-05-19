@@ -21,21 +21,11 @@ public class Duc2004Model implements Model {
 		this.id = parts[4];
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.IModel#getRelativePath()
-	 */
 	@Override
 	public Path getPath() {
 		return path;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.IModel#getId()
-	 */
 	@Override
 	public String getId() {
 		return id;

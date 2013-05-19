@@ -25,30 +25,15 @@ public class Duc2004Document implements Document {
 		this.id = new DocumentId(set, name);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.Document#getPath()
-	 */
 	@Override
 	public Path getPath() {
 		return path;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.Document#getId()
-	 */
 	public DocumentId getId() {
 		return id;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ethz.nlp.headline.Document#load()
-	 */
 	@Override
 	public String load() throws IOException {
 		String html = new String(Files.readAllBytes(getPath()));

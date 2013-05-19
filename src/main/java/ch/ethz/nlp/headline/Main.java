@@ -42,7 +42,7 @@ public class Main {
 				try {
 					peer.store(headline);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					System.exit(-1);
 					e.printStackTrace();
 				}
 				peers.add(peer);
