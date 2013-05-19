@@ -1,6 +1,7 @@
 package org.ethz.nlp.headline;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Task {
 
@@ -28,28 +29,18 @@ public class Task {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((document == null) ? 0 : document.hashCode());
-		return result;
+		return Objects.hash(document);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		} else if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Task other = (Task) obj;
-		if (document == null) {
-			if (other.document != null)
-				return false;
-		} else if (!document.equals(other.document))
-			return false;
-		return true;
+		return Objects.equals(document, other.document);
 	}
 
 }

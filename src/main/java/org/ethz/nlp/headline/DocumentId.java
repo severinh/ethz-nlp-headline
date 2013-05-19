@@ -1,5 +1,7 @@
 package org.ethz.nlp.headline;
 
+import java.util.Objects;
+
 public class DocumentId {
 
 	private final String set;
@@ -21,40 +23,19 @@ public class DocumentId {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((set == null) ? 0 : set.hashCode());
-		return result;
+		return Objects.hash(name, set);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
 		if (obj == null) {
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		} else if (getClass() != obj.getClass()) {
 			return false;
 		}
 		DocumentId other = (DocumentId) obj;
-		if (name == null) {
-			if (other.name != null) {
-				return false;
-			}
-		} else if (!name.equals(other.name)) {
-			return false;
-		}
-		if (set == null) {
-			if (other.set != null) {
-				return false;
-			}
-		} else if (!set.equals(other.set)) {
-			return false;
-		}
-		return true;
+		return Objects.equals(name, other.name)
+				&& Objects.equals(set, other.set);
 	}
 
 	@Override

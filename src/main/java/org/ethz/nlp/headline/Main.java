@@ -23,9 +23,11 @@ public class Main {
 		Path datasetRoot = FileSystems.getDefault().getPath(DUC_2004_ROOT);
 		Dataset dataset = new Duc2004Dataset(datasetRoot);
 		List<Task> tasks = dataset.getTasks();
+
 		List<Generator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator());
 		generators.add(new PosFilteredGenerator());
+
 		Map<Task, List<Peer>> peersMap = new HashMap<>();
 		for (Task task : tasks) {
 			String content = task.getDocument().load();

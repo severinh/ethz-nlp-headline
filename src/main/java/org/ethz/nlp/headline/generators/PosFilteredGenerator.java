@@ -62,9 +62,8 @@ public class PosFilteredGenerator implements Generator {
 			allTokens.add(tokenizer.next());
 		}
 
-		WordToSentenceProcessor<CoreLabel> wordToSentenceProcessor = new WordToSentenceProcessor<>();
-		List<List<CoreLabel>> sentences = wordToSentenceProcessor
-				.process(allTokens);
+		WordToSentenceProcessor<CoreLabel> processor = new WordToSentenceProcessor<>();
+		List<List<CoreLabel>> sentences = processor.process(allTokens);
 		List<CoreLabel> firstSentence = sentences.get(0);
 		return firstSentence;
 	}

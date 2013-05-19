@@ -1,6 +1,5 @@
 package org.ethz.nlp.headline.generators;
 
-
 /**
  * Generator that simply extracts the first sentence from the given text.
  */
