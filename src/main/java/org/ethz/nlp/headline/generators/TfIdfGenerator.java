@@ -1,40 +1,28 @@
 package org.ethz.nlp.headline.generators;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.Version;
+import java.util.Map;
+import java.util.Properties;
+
 import org.ethz.nlp.headline.Dataset;
 import org.ethz.nlp.headline.Document;
+import org.ethz.nlp.headline.DocumentId;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.BinaryHeapPriorityQueue;
 import edu.stanford.nlp.util.PriorityQueue;
 
-/**
- * Computes the TF-IDF score for each term in a document and chooses the terms
- * with the highest score for the headline.
- */
 public class TfIdfGenerator implements Generator {
-
-	private static final String ID_FIELD = "id";
-	private static final String CONTENT_FIELD = "content";
 
 	/**
 	 * The maximum number of characters in the generated headline. The generator
@@ -43,39 +31,41 @@ public class TfIdfGenerator implements Generator {
 	 */
 	private static final int MAX_LENGTH = 100;
 
-	private final IndexReader indexReader;
-	private final IndexSearcher indexSearcher;
+	private final StanfordCoreNLP pipeline;
 
-	public TfIdfGenerator(Dataset dataset) throws IOException {
-		Directory directory = new RAMDirectory();
-		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_43,
-				new StandardAnalyzer(Version.LUCENE_43));
-		IndexWriter indexWriter = new IndexWriter(directory, config);
+	private final Multimap<String, DocumentId> docFreqs;
+	private final Map<DocumentId, Multiset<String>> termFreqsPerDocument;
 
-		// Store each document in the index
-		for (Document document : dataset.getDocuments()) {
-			String documentId = document.getId().toString();
-			org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
-			FieldType idFieldType = new FieldType();
-			idFieldType.setStored(true);
-			idFieldType.setTokenized(false);
-			idFieldType.setIndexed(true);
-			luceneDoc.add(new Field(ID_FIELD, documentId, idFieldType));
+	public TfIdfGenerator() {
+		Properties props = new Properties();
+		props.put("annotators", "tokenize");
+		pipeline = new StanfordCoreNLP(props);
 
-			String content = document.load();
-			FieldType textFieldType = new FieldType();
-			textFieldType.setStored(true);
-			textFieldType.setTokenized(true);
-			textFieldType.setIndexed(true);
-			textFieldType.setStoreTermVectors(true);
-			luceneDoc.add(new Field(CONTENT_FIELD, content, textFieldType));
-			indexWriter.addDocument(luceneDoc);
+		docFreqs = HashMultimap.create();
+		termFreqsPerDocument = new HashMap<>();
+	}
+
+	private void addDocument(Document document) throws IOException {
+		Multiset<String> termFreqs = HashMultiset.create();
+		termFreqsPerDocument.put(document.getId(), termFreqs);
+
+		String content = document.load();
+		Annotation annotation = new Annotation(content);
+		pipeline.annotate(annotation);
+
+		for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
+			String term = label.word();
+			termFreqs.add(term);
+			docFreqs.put(term, document.getId());
 		}
+	}
 
-		indexWriter.commit();
-		indexWriter.close();
-		indexReader = DirectoryReader.open(directory);
-		indexSearcher = new IndexSearcher(indexReader);
+	public static TfIdfGenerator of(Dataset dataset) throws IOException {
+		TfIdfGenerator generator = new TfIdfGenerator();
+		for (Document document : dataset.getDocuments()) {
+			generator.addDocument(document);
+		}
+		return generator;
 	}
 
 	@Override
@@ -85,35 +75,18 @@ public class TfIdfGenerator implements Generator {
 
 	@Override
 	public String generate(Document document) throws IOException {
-		// Look up the document in the index
-		String documentId = document.getId().toString();
-		Query query = new TermQuery(new Term(ID_FIELD, documentId));
-		TopDocs results = indexSearcher.search(query, 1);
-		int internalId = results.scoreDocs[0].doc;
-
-		// Get the terms occurring in this document
-		Terms terms = indexReader.getTermVector(internalId, CONTENT_FIELD);
-		TermsEnum termsEnum = terms.iterator(null);
-		BytesRef term = null;
-
-		// Maps every term to its TF-IDF score
+		Multiset<String> termFreqs = termFreqsPerDocument.get(document.getId());
 		PriorityQueue<String> tfIdfMap = new BinaryHeapPriorityQueue<>();
+		double numDocs = termFreqsPerDocument.size();
 
-		int numDocs = indexReader.getDocCount(CONTENT_FIELD);
-		DefaultSimilarity similarity = new DefaultSimilarity();
-
-		while ((term = termsEnum.next()) != null) {
-			String termString = term.utf8ToString();
-			// The total number of documents that contain this term
-			long docFreq = indexReader.docFreq(new Term(CONTENT_FIELD,
-					termString));
-			float tf = similarity.tf(termsEnum.totalTermFreq());
-			float idf = similarity.idf(docFreq, numDocs);
-			float tfIdf = tf * idf;
-			tfIdfMap.add(termString, tfIdf);
+		for (String term : termFreqs.elementSet()) {
+			double termFreq = termFreqs.count(term);
+			double docFreq = docFreqs.get(term).size();
+			double inverseDocFreq = Math.log(numDocs / docFreq);
+			double tfIdf = termFreq * inverseDocFreq;
+			tfIdfMap.add(term, tfIdf);
 		}
 
-		// Greedily pick the terms with the highest score
 		List<String> sortedTerms = tfIdfMap.toSortedList();
 		StringBuilder builder = new StringBuilder();
 		for (String sortedTerm : sortedTerms) {
@@ -126,4 +99,5 @@ public class TfIdfGenerator implements Generator {
 		String result = builder.toString().trim();
 		return result;
 	}
+
 }
