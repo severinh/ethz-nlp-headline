@@ -15,6 +15,7 @@ import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.WordToSentenceProcessor;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+import edu.stanford.nlp.util.StringUtils;
 
 public class PosFilteredGenerator implements Generator {
 
@@ -37,23 +38,17 @@ public class PosFilteredGenerator implements Generator {
 	public String generate(Document document) throws IOException {
 		String text = document.load();
 		List<CoreLabel> firstSentence = getFirstSentence(text);
-		List<CoreLabel> labelsWithOpenTags = new ArrayList<>();
 		List<? extends CoreLabel> labels = annotator.processText(firstSentence);
+		List<String> wordsWithOpenTag = new ArrayList<>();
 
 		for (CoreLabel label : labels) {
 			String tag = label.get(PartOfSpeechAnnotation.class);
 			if (openTags.contains(tag)) {
-				labelsWithOpenTags.add(label);
+				wordsWithOpenTag.add(label.word());
 			}
 		}
 
-		StringBuilder builder = new StringBuilder();
-		for (CoreLabel label : labelsWithOpenTags) {
-			builder.append(label.word());
-			builder.append(" ");
-		}
-
-		return builder.toString();
+		return StringUtils.join(wordsWithOpenTag);
 	}
 
 	private List<CoreLabel> getFirstSentence(String text) {

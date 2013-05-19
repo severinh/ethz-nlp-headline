@@ -26,8 +26,8 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<Generator> generators = new ArrayList<>();
-		// generators.add(new BaselineGenerator());
-		// generators.add(new PosFilteredGenerator());
+		generators.add(new BaselineGenerator());
+		generators.add(new PosFilteredGenerator());
 		generators.add(new TfIdfGenerator(dataset));
 
 		Map<Task, List<Peer>> peersMap = new HashMap<>();
