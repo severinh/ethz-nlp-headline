@@ -47,40 +47,50 @@ public class Duc2004Dataset extends Dataset {
 	@Override
 	public List<Document> getDocuments() {
 		if (documents == null) {
-			documents = new ArrayList<>();
-			try (DirectoryStream<Path> setStream = Files
-					.newDirectoryStream(getDocumentRoot())) {
-				for (Path documentSetPath : setStream) {
-					try (DirectoryStream<Path> docStream = Files
-							.newDirectoryStream(documentSetPath)) {
-						for (Path documentPath : docStream) {
-							documents.add(new Duc2004Document(documentPath));
-						}
-					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
+			documents = getDocumentsImpl();
 		}
 		return documents;
+	}
+
+	private List<Document> getDocumentsImpl() {
+		List<Document> result = new ArrayList<>();
+		try (DirectoryStream<Path> setStream = Files
+				.newDirectoryStream(getDocumentRoot())) {
+			for (Path documentSetPath : setStream) {
+				try (DirectoryStream<Path> docStream = Files
+						.newDirectoryStream(documentSetPath)) {
+					for (Path documentPath : docStream) {
+						result.add(new Duc2004Document(documentPath));
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return result;
 	}
 
 	@Override
 	public List<Model> getModels() {
 		if (models == null) {
-			models = new ArrayList<>();
-			try (DirectoryStream<Path> stream = Files
-					.newDirectoryStream(getModelRoot())) {
-				for (Path modelPath : stream) {
-					models.add(new Duc2004Model(modelPath));
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
+			models = getModelsImpl();
 		}
 		return models;
+	}
+
+	private List<Model> getModelsImpl() {
+		List<Model> result = new ArrayList<>();
+		try (DirectoryStream<Path> stream = Files
+				.newDirectoryStream(getModelRoot())) {
+			for (Path modelPath : stream) {
+				result.add(new Duc2004Model(modelPath));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return result;
 	}
 
 	@Override
