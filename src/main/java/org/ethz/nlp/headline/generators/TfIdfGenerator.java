@@ -1,6 +1,8 @@
 package org.ethz.nlp.headline.generators;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.BinaryHeapPriorityQueue;
 import edu.stanford.nlp.util.PriorityQueue;
+import edu.stanford.nlp.util.StringUtils;
 
 public class TfIdfGenerator implements Generator {
 
@@ -44,13 +47,20 @@ public class TfIdfGenerator implements Generator {
 	 */
 	private final Map<DocumentId, Annotation> annotations;
 
-	public TfIdfGenerator() {
+	public TfIdfGenerator(Dataset dataset, String... annotators)
+			throws IOException {
+		List<String> allAnnotators = new ArrayList<>();
+		allAnnotators.add("tokenize");
+		allAnnotators.addAll(Arrays.asList(annotators));
+
 		Properties props = new Properties();
-		props.put("annotators", "tokenize");
+		props.put("annotators", StringUtils.join(allAnnotators, ","));
 		pipeline = new StanfordCoreNLP(props);
 
 		docFreqs = HashMultimap.create();
 		annotations = new HashMap<>();
+
+		addDocuments(dataset.getDocuments());
 	}
 
 	private void addDocument(Document document) throws IOException {
@@ -64,19 +74,10 @@ public class TfIdfGenerator implements Generator {
 		}
 	}
 
-	/**
-	 * Constructs a new generator from the given data set.
-	 * 
-	 * @param dataset
-	 * @return the newly constructed generator
-	 * @throws IOException
-	 */
-	public static TfIdfGenerator of(Dataset dataset) throws IOException {
-		TfIdfGenerator generator = new TfIdfGenerator();
-		for (Document document : dataset.getDocuments()) {
-			generator.addDocument(document);
+	private void addDocuments(List<Document> documents) throws IOException {
+		for (Document document : documents) {
+			addDocument(document);
 		}
-		return generator;
 	}
 
 	@Override
@@ -84,18 +85,36 @@ public class TfIdfGenerator implements Generator {
 		return "TF-IDF";
 	}
 
-	@Override
-	public String generate(Document document) throws IOException {
-		// Compute the frequency of each term in the document
+	protected Annotation getAnnotation(DocumentId documentId) {
+		return annotations.get(documentId);
+	}
+
+	/**
+	 * Compute the frequency of each term in the given document.
+	 * 
+	 * @param documentId
+	 * @return
+	 */
+	protected Multiset<String> getTermFreqs(DocumentId documentId) {
 		Multiset<String> termFreqs = HashMultiset.create();
-		Annotation annotation = annotations.get(document.getId());
+		Annotation annotation = annotations.get(documentId);
 
 		for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
 			String term = label.word();
 			termFreqs.add(term);
 		}
 
-		// Compute the tf-idf score for each term
+		return termFreqs;
+	}
+
+	/**
+	 * Compute the tf-idf score for each term in the given document.
+	 * 
+	 * @param documentId
+	 * @return
+	 */
+	protected PriorityQueue<String> getTfIdfMap(DocumentId documentId) {
+		Multiset<String> termFreqs = getTermFreqs(documentId);
 		PriorityQueue<String> tfIdfMap = new BinaryHeapPriorityQueue<>();
 		double numDocs = annotations.size();
 
@@ -106,6 +125,13 @@ public class TfIdfGenerator implements Generator {
 			double tfIdf = termFreq * inverseDocFreq;
 			tfIdfMap.add(term, tfIdf);
 		}
+
+		return tfIdfMap;
+	}
+
+	@Override
+	public String generate(Document document) throws IOException {
+		PriorityQueue<String> tfIdfMap = getTfIdfMap(document.getId());
 
 		// Build the headline from the words with the highest tf-idf score
 		List<String> sortedTerms = tfIdfMap.toSortedList();
