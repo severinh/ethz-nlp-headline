@@ -12,6 +12,7 @@ import org.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import org.ethz.nlp.headline.generators.BaselineGenerator;
 import org.ethz.nlp.headline.generators.Generator;
 import org.ethz.nlp.headline.generators.PosFilteredGenerator;
+import org.ethz.nlp.headline.generators.TfIdfGenerator;
 
 public class Main {
 
@@ -25,15 +26,16 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<Generator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator());
-		generators.add(new PosFilteredGenerator());
+		// generators.add(new BaselineGenerator());
+		// generators.add(new PosFilteredGenerator());
+		generators.add(new TfIdfGenerator(dataset));
 
 		Map<Task, List<Peer>> peersMap = new HashMap<>();
 		for (Task task : tasks) {
-			String content = task.getDocument().load();
+			Document document = task.getDocument();
 			List<Peer> peers = new ArrayList<>();
 			for (Generator generator : generators) {
-				String headline = generator.generate(content);
+				String headline = generator.generate(document);
 				Peer peer = dataset.makePeer(task, generator.getId());
 				try {
 					peer.store(headline);

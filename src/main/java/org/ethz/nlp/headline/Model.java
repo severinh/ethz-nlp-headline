@@ -8,4 +8,6 @@ public interface Model {
 
 	public String getId();
 
+	public DocumentId getDocumentId();
+
 }

@@ -11,6 +11,10 @@ public interface Dataset {
 
 	public Path getPeerRoot();
 
+	public List<Document> getDocuments();
+
+	public List<Model> getModels();
+
 	public List<Task> getTasks();
 
 	public Peer makePeer(Task task, String generatorId);

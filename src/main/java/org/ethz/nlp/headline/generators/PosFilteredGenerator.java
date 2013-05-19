@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.ethz.nlp.headline.Document;
+
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
@@ -32,7 +34,8 @@ public class PosFilteredGenerator implements Generator {
 	}
 
 	@Override
-	public String generate(String text) {
+	public String generate(Document document) throws IOException {
+		String text = document.load();
 		List<CoreLabel> firstSentence = getFirstSentence(text);
 		List<CoreLabel> labelsWithOpenTags = new ArrayList<>();
 		List<? extends CoreLabel> labels = annotator.processText(firstSentence);

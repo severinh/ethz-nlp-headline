@@ -1,5 +1,9 @@
 package org.ethz.nlp.headline.generators;
 
+import java.io.IOException;
+
+import org.ethz.nlp.headline.Document;
+
 /**
  * Generator that simply extracts the first sentence from the given text.
  */
@@ -11,7 +15,8 @@ public class BaselineGenerator implements Generator {
 	}
 
 	@Override
-	public String generate(String text) {
+	public String generate(Document document) throws IOException {
+		String text = document.load();
 		int sentenceEndIndex = text.indexOf('.');
 		if (sentenceEndIndex == -1) {
 			sentenceEndIndex = text.length();

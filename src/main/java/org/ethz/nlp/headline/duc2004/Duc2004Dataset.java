@@ -7,7 +7,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.ethz.nlp.headline.Dataset;
+import org.ethz.nlp.headline.Document;
 import org.ethz.nlp.headline.DocumentId;
 import org.ethz.nlp.headline.Model;
 import org.ethz.nlp.headline.Peer;
@@ -67,10 +69,10 @@ public class Duc2004Dataset implements Dataset {
 	public List<Task> getTasks() {
 		List<Task> tasks = new ArrayList<>();
 		Multimap<DocumentId, Model> modelMap = LinkedListMultimap.create();
-		for (Duc2004Model model : getModels()) {
+		for (Model model : getModels()) {
 			modelMap.put(model.getDocumentId(), model);
 		}
-		for (Duc2004Document document : getDocuments()) {
+		for (Document document : getDocuments()) {
 			Collection<Model> models = modelMap.get(document.getId());
 			Task task = new Task(document, new ArrayList<>(models));
 			tasks.add(task);
@@ -91,8 +93,9 @@ public class Duc2004Dataset implements Dataset {
 		return peer;
 	}
 
-	private List<Duc2004Document> getDocuments() {
-		List<Duc2004Document> result = new ArrayList<>();
+	@Override
+	public List<Document> getDocuments() {
+		List<Document> result = new ArrayList<>();
 		try (DirectoryStream<Path> setStream = Files
 				.newDirectoryStream(getDocumentRoot())) {
 			for (Path documentSetPath : setStream) {
@@ -110,8 +113,9 @@ public class Duc2004Dataset implements Dataset {
 		return result;
 	}
 
-	private List<Duc2004Model> getModels() {
-		List<Duc2004Model> result = new ArrayList<>();
+	@Override
+	public List<Model> getModels() {
+		List<Model> result = new ArrayList<>();
 		try (DirectoryStream<Path> stream = Files
 				.newDirectoryStream(getModelRoot())) {
 			for (Path modelPath : stream) {

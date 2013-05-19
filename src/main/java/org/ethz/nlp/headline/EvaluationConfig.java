@@ -1,7 +1,5 @@
 package org.ethz.nlp.headline;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,11 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import com.jamesmurty.utils.XMLBuilder;
 
 public class EvaluationConfig {
@@ -67,19 +61,7 @@ public class EvaluationConfig {
 			builder.toWriter(stringWriter, outputProperties);
 			Files.write(configPath, stringWriter.toString().getBytes(),
 					StandardOpenOption.CREATE);
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FactoryConfigurationError e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
