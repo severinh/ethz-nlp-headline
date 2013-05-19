@@ -59,8 +59,8 @@ public class EvaluationConfig {
 
 			StringWriter stringWriter = new StringWriter();
 			builder.toWriter(stringWriter, outputProperties);
-			Files.write(configPath, stringWriter.toString().getBytes(),
-					StandardOpenOption.CREATE);
+			byte[] bytes = stringWriter.toString().getBytes();
+			Files.write(configPath, bytes, StandardOpenOption.CREATE);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
