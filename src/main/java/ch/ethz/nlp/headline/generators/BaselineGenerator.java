@@ -23,7 +23,7 @@ public class BaselineGenerator extends CoreNLPGenerator {
 
 	@Override
 	public String generate(Document document) throws IOException {
-		Annotation annotation = annotations.get(document.getId());
+		Annotation annotation = getDocumentAnnotation(document);
 		CoreMap sentenceMap = annotation.get(SentencesAnnotation.class).get(0);
 		return sentenceMap.toString();
 	}

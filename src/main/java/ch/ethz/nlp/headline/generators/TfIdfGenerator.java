@@ -1,22 +1,32 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import ch.ethz.nlp.headline.Dataset;
+import ch.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.DocumentId;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
-import ch.ethz.nlp.headline.Dataset;
-import ch.ethz.nlp.headline.DocumentId;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.BinaryHeapPriorityQueue;
 import edu.stanford.nlp.util.PriorityQueue;
 
 public abstract class TfIdfGenerator extends CoreNLPGenerator {
+	
+	/**
+	 * Map the ID of each document to the document's annotation.
+	 */
+	protected final Map<DocumentId, Annotation> annotations;
 
 	/**
 	 * For each term, stores the collection of the IDs of all documents in which
@@ -29,6 +39,9 @@ public abstract class TfIdfGenerator extends CoreNLPGenerator {
 		super(dataset, annotators);
 
 		docFreqs = HashMultimap.create();
+		annotations = new HashMap<>();
+		
+		annotateAllDocuments(dataset.getDocuments());
 
 		for (Entry<DocumentId, Annotation> entry : annotations.entrySet()) {
 			DocumentId documentId = entry.getKey();
@@ -55,6 +68,13 @@ public abstract class TfIdfGenerator extends CoreNLPGenerator {
 		}
 
 		return termFreqs;
+	}
+	
+	protected void annotateAllDocuments(List<Document> documents) throws IOException {
+		for (Document document : documents) {
+			Annotation annotation = getDocumentAnnotation(document);
+			annotations.put(document.getId(), annotation);
+		}
 	}
 
 	/**

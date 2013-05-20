@@ -8,12 +8,7 @@ import edu.stanford.nlp.util.PriorityQueue;
 
 public class TfIdfWordsGenerator extends TfIdfGenerator {
 
-	/**
-	 * The maximum number of characters in the generated headline. The generator
-	 * will greedily build the headline from the terms with the highest TF-IDF
-	 * score until the limit is reached.
-	 */
-	private static final int MAX_LENGTH = 100;
+
 
 	public TfIdfWordsGenerator(Dataset dataset) throws IOException {
 		super(dataset);
