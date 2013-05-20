@@ -11,6 +11,7 @@ import com.google.common.collect.Multimap;
 
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
+import ch.ethz.nlp.headline.generators.CombinedSentenceGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
 import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
@@ -32,6 +33,8 @@ public class Main {
 		generators.add(new PosFilteredGenerator(dataset));
 		generators.add(new TfIdfWordsGenerator(dataset));
 		generators.add(new TfIdfSentenceGenerator(dataset));
+		generators.add(new CombinedSentenceGenerator(dataset));
+
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		for (Task task : tasks) {
