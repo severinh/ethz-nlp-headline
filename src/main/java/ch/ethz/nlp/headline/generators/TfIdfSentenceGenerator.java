@@ -19,7 +19,7 @@ import edu.stanford.nlp.util.PriorityQueue;
 public class TfIdfSentenceGenerator extends TfIdfGenerator {
 
 	public TfIdfSentenceGenerator(Dataset dataset) throws IOException {
-		super(dataset, "ssplit");
+		super(dataset);
 	}
 
 	@Override

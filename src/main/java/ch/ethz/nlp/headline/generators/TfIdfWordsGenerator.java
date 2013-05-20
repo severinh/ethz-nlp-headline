@@ -8,8 +8,6 @@ import edu.stanford.nlp.util.PriorityQueue;
 
 public class TfIdfWordsGenerator extends TfIdfGenerator {
 
-
-
 	public TfIdfWordsGenerator(Dataset dataset) throws IOException {
 		super(dataset);
 	}

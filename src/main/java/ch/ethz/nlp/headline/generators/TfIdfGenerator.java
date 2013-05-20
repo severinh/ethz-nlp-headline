@@ -34,10 +34,8 @@ public abstract class TfIdfGenerator extends CoreNLPGenerator {
 	 */
 	private final Multimap<String, DocumentId> docFreqs;
 
-	public TfIdfGenerator(Dataset dataset, String... annotators)
+	public TfIdfGenerator(Dataset dataset)
 			throws IOException {
-		super(dataset, annotators);
-
 		docFreqs = HashMultimap.create();
 		annotations = new HashMap<>();
 		
@@ -72,7 +70,7 @@ public abstract class TfIdfGenerator extends CoreNLPGenerator {
 	
 	protected void annotateAllDocuments(List<Document> documents) throws IOException {
 		for (Document document : documents) {
-			Annotation annotation = getDocumentAnnotation(document);
+			Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 			annotations.put(document.getId(), annotation);
 		}
 	}

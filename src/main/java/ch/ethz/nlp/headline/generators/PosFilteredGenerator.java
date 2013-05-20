@@ -2,6 +2,7 @@ package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -22,11 +24,11 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 
 	public PosFilteredGenerator(Dataset dataset) throws IOException,
 			ClassNotFoundException {
-		super(dataset, "ssplit", "pos");
 
 		// Temporarily create a tagger to gain access to the list of open tags
 		MaxentTagger tagger = new MaxentTagger(MaxentTagger.DEFAULT_JAR_PATH);
 		openTags = tagger.getTags().getOpenTags();
+
 	}
 
 	@Override
@@ -36,10 +38,18 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 
 	@Override
 	public String generate(Document document) throws IOException {
-		Annotation annotation = getDocumentAnnotation(document);
+		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 
-		CoreMap sentenceMap = annotation.get(SentencesAnnotation.class).get(0);
-		List<CoreLabel> labels = sentenceMap.get(TokensAnnotation.class);
+		// POS-tag the first sentence. Since the tagger exects an annotation with sentences,
+		// we create a new annotation with only that sentence under the key SentencesAnnotation.
+		CoreMap firstSentenceMap = annotation.get(SentencesAnnotation.class).get(0);
+		Annotation singleSentenceAnnotation = new Annotation(firstSentenceMap.get(TextAnnotation.class));
+		List<CoreMap> singletonList = new LinkedList<CoreMap>();
+		singletonList.add(firstSentenceMap);
+		singleSentenceAnnotation.set(SentencesAnnotation.class, singletonList);
+		getPosTagger().annotate(singleSentenceAnnotation);
+		
+		List<CoreLabel> labels = firstSentenceMap.get(TokensAnnotation.class);
 		List<String> wordsWithOpenTag = new ArrayList<>();
 
 		for (CoreLabel label : labels) {
