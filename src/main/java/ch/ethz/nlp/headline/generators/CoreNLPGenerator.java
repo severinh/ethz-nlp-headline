@@ -6,8 +6,10 @@ import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.DefaultPaths;
+import edu.stanford.nlp.pipeline.MorphaAnnotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
+import edu.stanford.nlp.pipeline.ParserAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 public abstract class CoreNLPGenerator implements Generator {
@@ -15,7 +17,9 @@ public abstract class CoreNLPGenerator implements Generator {
 	private static PTBTokenizerAnnotator TOKENIZER_INSTANCE;
 	private static WordsToSentencesAnnotator SENTENCE_SPLITTER_INSTANCE;
 	private static POSTaggerAnnotator POS_TAGGER_INSTANCE;
-	
+	private static MorphaAnnotator LEMMATIZER_INSTANCE;
+	private static ParserAnnotator PARSER_INSTANCE;
+
 	public static Annotator getTokenizer() {
 		if (TOKENIZER_INSTANCE == null) {
 			TOKENIZER_INSTANCE = new PTBTokenizerAnnotator(false,
@@ -23,20 +27,34 @@ public abstract class CoreNLPGenerator implements Generator {
 		}
 		return TOKENIZER_INSTANCE;
 	}
-	
+
 	public static Annotator getSentenceSplitter() {
 		if (SENTENCE_SPLITTER_INSTANCE == null) {
 			SENTENCE_SPLITTER_INSTANCE = new WordsToSentencesAnnotator();
 		}
 		return SENTENCE_SPLITTER_INSTANCE;
 	}
-	
+
 	public static Annotator getPosTagger() {
 		if (POS_TAGGER_INSTANCE == null) {
 			POS_TAGGER_INSTANCE = new POSTaggerAnnotator(
 					DefaultPaths.DEFAULT_POS_MODEL, false);
 		}
 		return POS_TAGGER_INSTANCE;
+	}
+
+	public static Annotator getLemmatizer() {
+		if (LEMMATIZER_INSTANCE == null) {
+			LEMMATIZER_INSTANCE = new MorphaAnnotator();
+		}
+		return LEMMATIZER_INSTANCE;
+	}
+
+	public static Annotator getParser() {
+		if (PARSER_INSTANCE == null) {
+			PARSER_INSTANCE = new ParserAnnotator(false, Integer.MAX_VALUE);
+		}
+		return PARSER_INSTANCE;
 	}
 
 	/**
@@ -51,11 +69,12 @@ public abstract class CoreNLPGenerator implements Generator {
 		getTokenizer().annotate(annotation);
 		return annotation;
 	}
-	
+
 	/**
 	 * Create an annotation with tokens and sentences of the given document.
 	 */
-	public Annotation getTokenizedSentenceDocumentAnnotation(Document document) throws IOException {
+	public Annotation getTokenizedSentenceDocumentAnnotation(Document document)
+			throws IOException {
 		Annotation resultAnnotation = getTokenizedDocumentAnnotation(document);
 		getSentenceSplitter().annotate(resultAnnotation);
 		return resultAnnotation;
