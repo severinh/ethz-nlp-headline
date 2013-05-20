@@ -1,16 +1,27 @@
 #!/bin/bash
 
-# Run ROUGE on the duc2004 data set.
-# The output is written to duc2004/eval/t1.rouge.out.
-
-mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.Main"
-
 ROUGE_HOME=$(pwd)/rouge-1.5.5
 ROUGE_EXE=$ROUGE_HOME/ROUGE-1.5.5.pl
 ROUGE_EVAL_HOME=$ROUGE_HOME/data # As suggested by ROUGE
 EVAL_CONFIG=evaluation.conf
-EVAL_OUTPUT=evaluation.out
+EVAL_OUTPUT_DIR=$(pwd)/evalout
+EVAL_OUTPUT=$EVAL_OUTPUT_DIR/evaluation-$(date '+%Y%m%d-%H%M%S').out
+DUC_PEERS_DIR=$(pwd)/duc2004/eval/peers/1
 
+mkdir -p $DUC_PEERS_DIR # create if it doesn't exist
+mkdir -p $EVAL_OUTPUT_DIR
+
+rm -f $EVAL_CONFIG
+find $DUC_PEERS_DIR -type f | xargs rm
+
+start_time=`date +%s`
+mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.Main"
+end_time=`date +%s`
+
+echo "Summarization process took $(expr $end_time - $start_time) s"
+
+# Run ROUGE on the duc2004 data set.
+# The output is written to duc2004/eval/t1.rouge.out.
 $ROUGE_EXE -e $ROUGE_EVAL_HOME \
     -a -x -c 95 -b 75 -m -n 2 \
     $EVAL_CONFIG > $EVAL_OUTPUT
