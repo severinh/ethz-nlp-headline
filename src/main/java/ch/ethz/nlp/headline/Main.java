@@ -15,7 +15,6 @@ import ch.ethz.nlp.headline.generators.CombinedSentenceGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
 import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
-import ch.ethz.nlp.headline.generators.TfIdfSentenceGenerator;
 
 public class Main {
 
@@ -32,9 +31,7 @@ public class Main {
 		generators.add(new BaselineGenerator(dataset));
 		generators.add(new PosFilteredGenerator(dataset));
 		generators.add(new TfIdfWordsGenerator(dataset));
-		generators.add(new TfIdfSentenceGenerator(dataset));
 		generators.add(new CombinedSentenceGenerator(dataset));
-
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		for (Task task : tasks) {

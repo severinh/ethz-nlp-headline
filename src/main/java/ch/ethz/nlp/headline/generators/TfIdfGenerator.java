@@ -22,7 +22,7 @@ import edu.stanford.nlp.util.BinaryHeapPriorityQueue;
 import edu.stanford.nlp.util.PriorityQueue;
 
 public abstract class TfIdfGenerator extends CoreNLPGenerator {
-	
+
 	/**
 	 * Map the ID of each document to the document's annotation.
 	 */
@@ -34,11 +34,10 @@ public abstract class TfIdfGenerator extends CoreNLPGenerator {
 	 */
 	private final Multimap<String, DocumentId> docFreqs;
 
-	public TfIdfGenerator(Dataset dataset)
-			throws IOException {
+	public TfIdfGenerator(Dataset dataset) throws IOException {
 		docFreqs = HashMultimap.create();
 		annotations = new HashMap<>();
-		
+
 		annotateAllDocuments(dataset.getDocuments());
 
 		for (Entry<DocumentId, Annotation> entry : annotations.entrySet()) {
@@ -67,8 +66,9 @@ public abstract class TfIdfGenerator extends CoreNLPGenerator {
 
 		return termFreqs;
 	}
-	
-	protected void annotateAllDocuments(List<Document> documents) throws IOException {
+
+	protected void annotateAllDocuments(List<Document> documents)
+			throws IOException {
 		for (Document document : documents) {
 			Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 			annotations.put(document.getId(), annotation);

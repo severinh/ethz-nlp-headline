@@ -18,7 +18,8 @@ public abstract class CoreNLPGenerator implements Generator {
 	
 	public static Annotator getTokenizer() {
 		if (TOKENIZER_INSTANCE == null) {
-			TOKENIZER_INSTANCE = new PTBTokenizerAnnotator(false, PTBTokenizerAnnotator.DEFAULT_OPTIONS);
+			TOKENIZER_INSTANCE = new PTBTokenizerAnnotator(false,
+					PTBTokenizerAnnotator.DEFAULT_OPTIONS);
 		}
 		return TOKENIZER_INSTANCE;
 	}
@@ -26,23 +27,25 @@ public abstract class CoreNLPGenerator implements Generator {
 	public static Annotator getSentenceSplitter() {
 		if (SENTENCE_SPLITTER_INSTANCE == null) {
 			SENTENCE_SPLITTER_INSTANCE = new WordsToSentencesAnnotator();
-
 		}
 		return SENTENCE_SPLITTER_INSTANCE;
 	}
 	
 	public static Annotator getPosTagger() {
 		if (POS_TAGGER_INSTANCE == null) {
-			POS_TAGGER_INSTANCE = new POSTaggerAnnotator(DefaultPaths.DEFAULT_POS_MODEL, false);
+			POS_TAGGER_INSTANCE = new POSTaggerAnnotator(
+					DefaultPaths.DEFAULT_POS_MODEL, false);
 		}
 		return POS_TAGGER_INSTANCE;
 	}
 
 	/**
 	 * Create an annotation with the tokens of the given document.
+	 * 
 	 * @param document
 	 */
-	public Annotation getTokenizedDocumentAnnotation(Document document) throws IOException {
+	public Annotation getTokenizedDocumentAnnotation(Document document)
+			throws IOException {
 		String content = document.load();
 		Annotation annotation = new Annotation(content);
 		getTokenizer().annotate(annotation);

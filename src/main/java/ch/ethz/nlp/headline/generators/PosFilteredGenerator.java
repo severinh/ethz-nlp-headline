@@ -44,7 +44,7 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 		// we create a new annotation with only that sentence under the key SentencesAnnotation.
 		CoreMap firstSentenceMap = annotation.get(SentencesAnnotation.class).get(0);
 		Annotation singleSentenceAnnotation = new Annotation(firstSentenceMap.get(TextAnnotation.class));
-		List<CoreMap> singletonList = new LinkedList<CoreMap>();
+		List<CoreMap> singletonList = new LinkedList<>();
 		singletonList.add(firstSentenceMap);
 		singleSentenceAnnotation.set(SentencesAnnotation.class, singletonList);
 		getPosTagger().annotate(singleSentenceAnnotation);

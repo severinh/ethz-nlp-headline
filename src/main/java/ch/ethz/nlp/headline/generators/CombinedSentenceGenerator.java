@@ -95,7 +95,7 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 			bestScores.add(score);
 			
 			Annotation singleSentenceAnnotation = new Annotation(currentSentence.get(TextAnnotation.class));
-			List<CoreMap> singletonList = new LinkedList<CoreMap>();
+			List<CoreMap> singletonList = new LinkedList<>();
 			singletonList.add(currentSentence);
 			singleSentenceAnnotation.set(SentencesAnnotation.class, singletonList);
 			getPosTagger().annotate(singleSentenceAnnotation);
