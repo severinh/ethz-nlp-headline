@@ -11,14 +11,13 @@ import java.util.Stack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
-
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
+
+import com.google.common.collect.ImmutableSet;
+
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -117,7 +116,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			@Override
 			public boolean accept(Tree tree) {
 				CoreLabel label = (CoreLabel) tree.label();
-				String lemma = label.get(LemmaAnnotation.class);
+				String lemma = label.lemma();
 				return !DETERMINERS.contains(lemma);
 			}
 
