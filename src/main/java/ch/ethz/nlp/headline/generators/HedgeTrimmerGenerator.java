@@ -20,6 +20,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -69,7 +70,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		sTree = shortenIterativelyRule1(sTree);
 		sTree = shortenIterativelyRule2(sTree);
 
-		String result = StringUtils.join(sTree.yieldWords(), " ");
+		String result = treeToString(sTree, MAX_LENGTH);
 		getStatistics().addSummaryResult(result);
 		return truncate(result);
 	}
@@ -209,6 +210,23 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		}
 
 		return fullTree;
+	}
+
+	private String treeToString(Tree tree, int maxLength) {
+		StringBuilder builder = new StringBuilder();
+		for (Label label : tree.yield()) {
+			CoreLabel coreLabel = (CoreLabel) label;
+			String word = coreLabel.word();
+			if (builder.length() + word.length() > maxLength) {
+				break;
+			}
+			builder.append(word);
+			if (!word.equals(",")) {
+				builder.append(" ");
+			}
+		}
+		String result = builder.toString();
+		return result;
 	}
 
 	private Tree shortenIterativelyRule2(Tree tree) {
