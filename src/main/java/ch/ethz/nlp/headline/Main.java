@@ -17,7 +17,8 @@ import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CombinedSentenceGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
-import ch.ethz.nlp.headline.generators.CompressedSentenceGenerator;
+import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
+import ch.ethz.nlp.headline.generators.SanitizingGenerator;
 import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
 
 public class Main {
@@ -32,17 +33,18 @@ public class Main {
 
 		List<Generator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator(dataset));
-		generators.add(new PosFilteredGenerator(dataset));
-		generators.add(new TfIdfWordsGenerator(dataset));
-		generators.add(new CombinedSentenceGenerator(dataset));
-		generators.add(new CompressedSentenceGenerator(dataset));
+		// generators.add(new SanitizingGenerator());
+		// generators.add(new PosFilteredGenerator(dataset));
+		// generators.add(new TfIdfWordsGenerator(dataset));
+		// generators.add(new CombinedSentenceGenerator(dataset));
+		generators.add(new HedgeTrimmerGenerator(dataset));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		for (int i = 0; i < tasks.size(); i++) {
 			Task task = tasks.get(i);
 			Document document = task.getDocument();
 
-			LOG.info(String.format("Processing task %d of %d: %s", i,
+			LOG.info(String.format("Processing task %d of %d: %s", i + 1,
 					tasks.size(), document.getId()));
 
 			for (Generator generator : generators) {
