@@ -18,13 +18,11 @@ import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
 
 public class Main {
 
-	private static final String DUC_2004_ROOT = "duc2004";
 	private static final String EVALUATION_CONFIG_FILENAME = "evaluation.conf";
 
 	public static void main(String[] args) throws ClassNotFoundException,
 			IOException {
-		Path datasetRoot = FileSystems.getDefault().getPath(DUC_2004_ROOT);
-		Dataset dataset = new Duc2004Dataset(datasetRoot);
+		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
 		List<Generator> generators = new ArrayList<>();
@@ -54,4 +52,5 @@ public class Main {
 				EVALUATION_CONFIG_FILENAME);
 		config.write(configPath, peersMap);
 	}
+
 }

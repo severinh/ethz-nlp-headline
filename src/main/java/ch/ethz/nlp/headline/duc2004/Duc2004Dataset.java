@@ -2,6 +2,7 @@ package ch.ethz.nlp.headline.duc2004;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ import ch.ethz.nlp.headline.Task;
 
 public class Duc2004Dataset extends Dataset {
 
+	private static final String DUC_2004_ROOT = "duc2004";
+
 	private final Path documentRoot;
 	private final Path modelRoot;
 	private final Path peerRoot;
@@ -27,6 +30,12 @@ public class Duc2004Dataset extends Dataset {
 		documentRoot = root.resolve("docs");
 		modelRoot = root.resolve("eval").resolve("models").resolve("1");
 		peerRoot = root.resolve("eval").resolve("peers").resolve("1");
+	}
+
+	public static Duc2004Dataset ofDefaultRoot() {
+		Path datasetRoot = FileSystems.getDefault().getPath(DUC_2004_ROOT);
+		Duc2004Dataset dataset = new Duc2004Dataset(datasetRoot);
+		return dataset;
 	}
 
 	@Override
