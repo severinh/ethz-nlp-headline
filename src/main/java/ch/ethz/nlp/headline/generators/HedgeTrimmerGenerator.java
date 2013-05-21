@@ -130,20 +130,25 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			public boolean accept(Tree tree) {
 				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
 				// time expression
-				// Currently disabled because it trims too much in some cases
-				if (false && tree.value().equals("PP")) {
-					Stack<Tree> treeStack = new Stack<>();
-					treeStack.addAll(Arrays.asList(tree.children()));
-					while (!treeStack.isEmpty()) {
-						Tree child = treeStack.pop();
-						if (!child.value().equals("PP")) {
-							CoreLabel childLabel = (CoreLabel) child.label();
-							String ner = childLabel.ner();
-							if (Objects.equals(ner, "DATE")) {
-								logTrimming(tree, "Date");
-								return false;
-							} else {
-								treeStack.addAll(Arrays.asList(child.children()));
+				if (tree.value().equals("PP")) {
+					// Only allow at most 3 leaves to be removed. Otherwise,
+					// large parts of the sentence might be trimmed by accident.
+					if (tree.getLeaves().size() <= 3) {
+						Stack<Tree> treeStack = new Stack<>();
+						treeStack.addAll(Arrays.asList(tree.children()));
+						while (!treeStack.isEmpty()) {
+							Tree child = treeStack.pop();
+							if (!child.value().equals("PP")) {
+								CoreLabel childLabel = (CoreLabel) child
+										.label();
+								String ner = childLabel.ner();
+								if (Objects.equals(ner, "DATE")) {
+									logTrimming(tree, "Date");
+									return false;
+								} else {
+									treeStack.addAll(Arrays.asList(child
+											.children()));
+								}
 							}
 						}
 					}
