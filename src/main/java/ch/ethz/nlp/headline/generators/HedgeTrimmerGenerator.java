@@ -129,7 +129,6 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			CoreLabel thisLabel = (CoreLabel) labels.get(i);
 			CoreLabel nextLabel = (CoreLabel) labels.get(i+1);
 			if (isPerson(thisLabel) && isPerson(nextLabel)) {
-				System.out.println("Person found: " + thisLabel.originalText() + " " + nextLabel.originalText());
 				namesToRemove.add(thisLabel.originalText());
 			}
 		}
