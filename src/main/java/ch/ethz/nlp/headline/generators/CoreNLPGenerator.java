@@ -122,7 +122,6 @@ public abstract class CoreNLPGenerator implements Generator {
 	}
 
 	protected String truncate(String headline) {
-
 		if (headline.length() > MAX_LENGTH) {
 			headline = headline.substring(0, MAX_LENGTH);
 		}

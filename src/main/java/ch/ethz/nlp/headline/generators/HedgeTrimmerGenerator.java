@@ -71,9 +71,10 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		sTree = shortenIterativelyRule1(sTree);
 		sTree = shortenIterativelyRule2(sTree);
 
-		String result = treeToString(sTree, MAX_LENGTH);
+		String result = treeToString(sTree, Integer.MAX_VALUE);
+		String trimmedResult = treeToString(sTree, MAX_LENGTH);
 		getStatistics().addSummaryResult(result);
-		return truncate(result);
+		return trimmedResult;
 	}
 
 	private Tree getLowestLeftmostSWithNPVP(Tree tree) {
