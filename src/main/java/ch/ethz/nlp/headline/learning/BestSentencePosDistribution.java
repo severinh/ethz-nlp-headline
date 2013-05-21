@@ -63,9 +63,9 @@ public class BestSentencePosDistribution {
 	 * @return the position of the best sentence in the document
 	 * @throws IOException
 	 */
-	public int getBestSentencePos(Task task) throws IOException {
+	public int getBestSentencePos(Task task) {
 		Document document = task.getDocument();
-		String documentContent = document.load();
+		String documentContent = document.getContent();
 
 		Annotation documentAnnotation = getAnnotation(documentContent);
 		List<CoreMap> sentences = documentAnnotation
@@ -73,7 +73,7 @@ public class BestSentencePosDistribution {
 
 		List<CoreMap> models = new ArrayList<>();
 		for (Model model : task.getModels()) {
-			String modelContent = model.load();
+			String modelContent = model.getContent();
 			Annotation modelAnnotation = getAnnotation(modelContent);
 			CoreMap modelSentence = modelAnnotation.get(
 					SentencesAnnotation.class).get(0);

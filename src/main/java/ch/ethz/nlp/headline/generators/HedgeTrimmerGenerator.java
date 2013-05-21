@@ -22,6 +22,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
+import edu.stanford.nlp.parser.tools.PunctEquivalenceClasser;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -44,11 +45,18 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(Document document) throws IOException {
-		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
+	public String generate(Document document) {
+		String content = document.getContent();
+
+		// Drop prefixes such as: BRUSSELS, Belgium (AP) -
+		content = content.replaceAll("\\w+, \\w+ \\(AP\\) . ", "");
+
+		Annotation annotation = new Annotation(content);
+		getTokenizer().annotate(annotation);
+		getSentenceSplitter().annotate(annotation);
+
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
 		CoreMap firstSentence = sentences.get(0);
-
 		Annotation sentenceAnnotation = makeAnnotationFromSentence(firstSentence);
 
 		getPosTagger().annotate(sentenceAnnotation);
@@ -73,9 +81,10 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		
 		sTree = simplifyPersonNames(sTree);
 
-		String result = treeToString(sTree, MAX_LENGTH);
+		String result = treeToString(sTree, Integer.MAX_VALUE);
+		String trimmedResult = treeToString(sTree, MAX_LENGTH);
 		getStatistics().addSummaryResult(result);
-		return truncate(result);
+		return trimmedResult;
 	}
 
 	private Tree getLowestLeftmostSWithNPVP(Tree tree) {
@@ -146,13 +155,17 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 			private static final long serialVersionUID = 1L;
 
-			private Set<String> DETERMINERS = ImmutableSet.of("a", "the");
+			private Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a", "the",
+					"have", "be");
 
 			@Override
 			public boolean accept(Tree tree) {
 				CoreLabel label = (CoreLabel) tree.label();
 				String lemma = label.lemma();
-				return !DETERMINERS.contains(lemma);
+				if (TRIMMED_LEMMAS.contains(lemma)) {
+					return false;
+				}
+				return true;
 			}
 
 		});
@@ -165,20 +178,25 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			public boolean accept(Tree tree) {
 				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
 				// time expression
-				// Currently disabled because it trims too much in some cases
-				if (false && tree.value().equals("PP")) {
-					Stack<Tree> treeStack = new Stack<>();
-					treeStack.addAll(Arrays.asList(tree.children()));
-					while (!treeStack.isEmpty()) {
-						Tree child = treeStack.pop();
-						if (!child.value().equals("PP")) {
-							CoreLabel childLabel = (CoreLabel) child.label();
-							String ner = childLabel.ner();
-							if (Objects.equals(ner, "DATE")) {
-								logTrimming(tree, "Date");
-								return false;
-							} else {
-								treeStack.addAll(Arrays.asList(child.children()));
+				if (tree.value().equals("PP")) {
+					// Only allow at most 3 leaves to be removed. Otherwise,
+					// large parts of the sentence might be trimmed by accident.
+					if (tree.getLeaves().size() <= 3) {
+						Stack<Tree> treeStack = new Stack<>();
+						treeStack.addAll(Arrays.asList(tree.children()));
+						while (!treeStack.isEmpty()) {
+							Tree child = treeStack.pop();
+							if (!child.value().equals("PP")) {
+								CoreLabel childLabel = (CoreLabel) child
+										.label();
+								String ner = childLabel.ner();
+								if (Objects.equals(ner, "DATE")) {
+									logTrimming(tree, "Date");
+									return false;
+								} else {
+									treeStack.addAll(Arrays.asList(child
+											.children()));
+								}
 							}
 						}
 					}
@@ -253,13 +271,14 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		for (Label label : tree.yield()) {
 			CoreLabel coreLabel = (CoreLabel) label;
 			String word = coreLabel.word();
+			if (!PunctEquivalenceClasser.getPunctClass(word).isEmpty()) {
+				continue;
+			}
 			if (builder.length() + word.length() > maxLength) {
 				break;
 			}
 			builder.append(word);
-			if (!word.equals(",")) {
-				builder.append(" ");
-			}
+			builder.append(" ");
 		}
 		String result = builder.toString();
 		return result;

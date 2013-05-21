@@ -16,13 +16,22 @@ public class Duc2004Document implements Document {
 
 	private final Path path;
 	private final DocumentId id;
+	private final String content;
 
-	public Duc2004Document(Path path) {
+	public Duc2004Document(Path path) throws IOException {
 		String set = path.getParent().getFileName().toString();
 		String name = path.getFileName().toString();
 
 		this.path = path;
 		this.id = new DocumentId(set, name);
+
+		String html = new String(Files.readAllBytes(getPath()));
+		Matcher matcher = TEXT_PATTERN.matcher(html);
+		if (matcher.find()) {
+			content = matcher.group(1).trim();
+		} else {
+			throw new IOException("could not parse document");
+		}
 	}
 
 	@Override
@@ -30,20 +39,14 @@ public class Duc2004Document implements Document {
 		return path;
 	}
 
+	@Override
 	public DocumentId getId() {
 		return id;
 	}
 
 	@Override
-	public String load() throws IOException {
-		String html = new String(Files.readAllBytes(getPath()));
-		Matcher matcher = TEXT_PATTERN.matcher(html);
-		if (matcher.find()) {
-			String text = matcher.group(1).trim();
-			return text;
-		} else {
-			throw new IOException("could not parse document");
-		}
+	public String getContent() {
+		return content;
 	}
 
 	@Override
