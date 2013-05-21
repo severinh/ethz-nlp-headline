@@ -1,20 +1,24 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
-
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
-import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
+
+import com.google.common.collect.ImmutableSet;
+
+import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.ValueAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
@@ -34,7 +38,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	@Override
 	public String getId() {
-		return "HEDGE-TRIMMER";
+		return "HEDGE";
 	}
 
 	@Override
@@ -47,8 +51,8 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 		getPosTagger().annotate(sentenceAnnotation);
 		getLemmatizer().annotate(sentenceAnnotation);
-		getParser().annotate(sentenceAnnotation);
 		getNER().annotate(sentenceAnnotation);
+		getParser().annotate(sentenceAnnotation);
 
 		Tree tree = firstSentence.get(TreeAnnotation.class);
 
@@ -62,6 +66,8 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		}
 
 		sTree = removeLowContentNodes(sTree);
+		sTree = shortenIterativelyRule1(sTree);
+		sTree = shortenIterativelyRule2(sTree);
 
 		String result = StringUtils.join(sTree.yieldWords(), " ");
 		getStatistics().addSummaryResult(result);
@@ -99,7 +105,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 	}
 
 	private Tree removeLowContentNodes(Tree tree) {
-		return tree.prune(new Filter<Tree>() {
+		tree = tree.prune(new Filter<Tree>() {
 
 			private static final long serialVersionUID = 1L;
 
@@ -108,11 +114,117 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			@Override
 			public boolean accept(Tree tree) {
 				CoreLabel label = (CoreLabel) tree.label();
-				String lemma = label.get(LemmaAnnotation.class);
+				String lemma = label.lemma();
 				return !DETERMINERS.contains(lemma);
 			}
 
 		});
+
+		tree = tree.prune(new Filter<Tree>() {
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean accept(Tree tree) {
+				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
+				// time expression
+				// Currently disabled because it trims too much in some cases
+				if (true && tree.value().equals("PP")) {
+					Stack<Tree> treeStack = new Stack<>();
+					treeStack.addAll(Arrays.asList(tree.children()));
+					while (!treeStack.isEmpty()) {
+						Tree child = treeStack.pop();
+						if (!child.value().equals("PP")) {
+							CoreLabel childLabel = (CoreLabel) child.label();
+							String ner = childLabel.ner();
+							if (Objects.equals(ner, "DATE")) {
+								logTrimming(tree, "Date");
+								return false;
+							} else {
+								treeStack.addAll(Arrays.asList(child.children()));
+							}
+						}
+					}
+				}
+				// Remove [NNP [X]] where X is a tagged as part of a
+				// time expression
+				if (tree.value().equals("NNP")) {
+					CoreLabel childLabel = (CoreLabel) tree.firstChild()
+							.label();
+					String ner = childLabel.ner();
+					if (Objects.equals(ner, "DATE")) {
+						logTrimming(tree, "Date");
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+		});
+
+		return tree;
+	}
+
+	private Tree shortenIterativelyRule1(Tree fullTree) {
+		List<CoreLabel> candidates = new ArrayList<>();
+		Set<String> XP = ImmutableSet.of("NP", "VP", "S");
+
+		for (Tree tree : fullTree) {
+			if (XP.contains(tree.value())) {
+				Tree[] children = tree.children();
+				if (children[0].value().equals(tree.value())) {
+					for (int i = 1; i < children.length; i++) {
+						candidates.add((CoreLabel) children[i].label());
+					}
+				}
+			}
+		}
+
+		if (!candidates.isEmpty()) {
+			// Just eliminate the right-most and deepest candidate for the
+			// moment
+			final CoreLabel candidate = candidates.get(candidates.size() - 1);
+			fullTree = fullTree.prune(new Filter<Tree>() {
+
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public boolean accept(Tree tree) {
+					CoreLabel label = (CoreLabel) tree.label();
+					if (label != null
+							&& Objects.equals(
+									label.get(BeginIndexAnnotation.class),
+									candidate.get(BeginIndexAnnotation.class))
+							&& Objects.equals(
+									label.get(EndIndexAnnotation.class),
+									candidate.get(EndIndexAnnotation.class))) {
+						logTrimming(tree, "Iterative Shortening Rule 1");
+						return false;
+					}
+					return true;
+				}
+
+			});
+		}
+
+		return fullTree;
+	}
+
+	private Tree shortenIterativelyRule2(Tree tree) {
+		if (tree.value().equals("S")) {
+			while (tree.firstChild() != null
+					&& !tree.firstChild().value().equals("NP")) {
+				logTrimming(tree.firstChild(), "Iterative Shortening Rule 2");
+				tree.removeChild(0);
+			}
+		}
+		return tree;
+	}
+
+	private void logTrimming(Tree trimmedTree, String rule) {
+		String trimmedText = StringUtils.join(trimmedTree.yieldWords(), " ");
+		LOG.debug("Trimming '" + trimmedText + "' [" + rule + "]");
 	}
 
 }

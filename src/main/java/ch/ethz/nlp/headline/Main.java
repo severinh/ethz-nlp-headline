@@ -55,6 +55,7 @@ public class Main {
 					e.printStackTrace();
 				}
 				peersMap.put(task, peer);
+				LOG.info(String.format("%s\t%s", generator.getId(), headline));
 			}
 		}
 		
