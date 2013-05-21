@@ -71,11 +71,13 @@ public class EvaluationOutput {
 			for (CoreLabel label : labels) {
 				boolean isHit = modelLemmas.contains(label.lemma());
 				String word = label.word();
+				if (!word.equals("'s")) {
+					builder.append(" ");
+				}
 				if (isHit) {
 					word = peerHitColor.makeString(word);
 				}
 				builder.append(word);
-				builder.append(" ");
 			}
 			LOG.info(String.format("%s\t%s", generatorId, builder.toString()));
 		}

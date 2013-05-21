@@ -284,10 +284,12 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			if (builder.length() + word.length() > maxLength) {
 				break;
 			}
+			if (!word.equals("'s")) {
+				builder.append(" ");
+			}
 			builder.append(word);
-			builder.append(" ");
 		}
-		String result = builder.toString();
+		String result = builder.toString().trim();
 		return result;
 	}
 
