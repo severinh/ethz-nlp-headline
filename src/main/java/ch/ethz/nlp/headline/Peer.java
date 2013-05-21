@@ -11,4 +11,6 @@ public interface Peer {
 
 	public void store(String headline) throws IOException;
 
+	public String load();
+
 }

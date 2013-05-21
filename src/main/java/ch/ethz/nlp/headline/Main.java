@@ -14,6 +14,7 @@ import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
+import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -29,14 +30,15 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<CoreNLPGenerator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator(dataset));
+		// generators.add(new BaselineGenerator(dataset));
 		// generators.add(new SanitizingGenerator());
-		// generators.add(new PosFilteredGenerator(dataset));
+		generators.add(new PosFilteredGenerator(dataset));
 		// generators.add(new TfIdfWordsGenerator(dataset));
 		// generators.add(new CombinedSentenceGenerator(dataset));
-		generators.add(new HedgeTrimmerGenerator(dataset));
+		// generators.add(new HedgeTrimmerGenerator(dataset));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
+		EvaluationOutput evaluationOutput = new EvaluationOutput();
 
 		for (int i = 0; i < tasks.size(); i++) {
 			Task task = tasks.get(i);
@@ -55,16 +57,9 @@ public class Main {
 					e.printStackTrace();
 				}
 				peersMap.put(task, peer);
-				LOG.info(String.format("\u001B[33m%s\t%s\u001B[0m",
-						generator.getId(), headline));
 			}
 
-			List<Model> models = task.getModels();
-			for (int modelIndex = 0; modelIndex < models.size(); modelIndex++) {
-				Model model = models.get(modelIndex);
-				LOG.info(String.format("\u001B[34mMDL %d\t%s\u001B[0m",
-						modelIndex + 1, model.load()));
-			}
+			evaluationOutput.log(task, peersMap.get(task));
 		}
 
 		for (CoreNLPGenerator generator : generators) {

@@ -13,6 +13,8 @@ public class Duc2004Peer implements Peer {
 	public final Path path;
 	public final String generatorId;
 
+	public String headline;
+
 	public Duc2004Peer(Path peerRoot, DocumentId documentId, String generatorId) {
 		super();
 
@@ -37,6 +39,12 @@ public class Duc2004Peer implements Peer {
 	@Override
 	public void store(String headline) throws IOException {
 		Files.write(getPath(), headline.getBytes(), StandardOpenOption.CREATE);
+		this.headline = headline;
+	}
+
+	@Override
+	public String load() {
+		return headline;
 	}
 
 	@Override
