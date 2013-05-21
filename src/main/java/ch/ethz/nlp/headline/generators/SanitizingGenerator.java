@@ -22,11 +22,8 @@ public class SanitizingGenerator extends CoreNLPGenerator {
 
 		// Drop prefixes such as: BRUSSELS, Belgium (AP) -
 		result = result.replaceAll("\\w+, \\w+ \\(AP\\) - ", "");
-
-		if (result.length() > MAX_LENGTH) {
-			result = result.substring(0, MAX_LENGTH);
-		}
-		return result;
+		getStatistics().addSummaryResult(result);
+		return truncate(result);
 	}
 
 }

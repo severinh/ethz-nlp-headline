@@ -9,17 +9,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
-
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
-import ch.ethz.nlp.headline.generators.CombinedSentenceGenerator;
+import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
-import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
-import ch.ethz.nlp.headline.generators.SanitizingGenerator;
-import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
+
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 public class Main {
 
@@ -31,7 +28,7 @@ public class Main {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
-		List<Generator> generators = new ArrayList<>();
+		List<CoreNLPGenerator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator(dataset));
 		// generators.add(new SanitizingGenerator());
 		// generators.add(new PosFilteredGenerator(dataset));
@@ -40,6 +37,7 @@ public class Main {
 		generators.add(new HedgeTrimmerGenerator(dataset));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
+
 		for (int i = 0; i < tasks.size(); i++) {
 			Task task = tasks.get(i);
 			Document document = task.getDocument();
@@ -59,11 +57,14 @@ public class Main {
 				peersMap.put(task, peer);
 			}
 		}
+		
+		for (CoreNLPGenerator generator : generators) {
+			LOG.info(generator.getStatistics().toString());
+		}
 
 		EvaluationConfig config = new EvaluationConfig(dataset);
 		Path configPath = FileSystems.getDefault().getPath(
 				EVALUATION_CONFIG_FILENAME);
 		config.write(configPath, peersMap);
 	}
-
 }

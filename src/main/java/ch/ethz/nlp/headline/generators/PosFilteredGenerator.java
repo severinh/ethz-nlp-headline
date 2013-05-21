@@ -60,10 +60,8 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 		}
 
 		String result =  StringUtils.join(wordsWithOpenTag);
-		if (result.length() > MAX_LENGTH) {
-			result = result.substring(0, MAX_LENGTH);
-		}
-		return result;
+		getStatistics().addSummaryResult(result);
+		return truncate(result);
 	}
 
 }
