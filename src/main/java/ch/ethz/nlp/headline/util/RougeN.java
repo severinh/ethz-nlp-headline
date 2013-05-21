@@ -32,6 +32,16 @@ public class RougeN {
 		this.n = n;
 	}
 
+	/**
+	 * Computes the recall of a given candidate summary with respect to the
+	 * given list of reference summaries.
+	 * 
+	 * @param references
+	 *            list of reference summaries
+	 * @param candidate
+	 *            candidate summary
+	 * @return the recall
+	 */
 	public double compute(List<CoreMap> references, CoreMap candidate) {
 		double numerator = 0.0;
 		double denominator = 0.0;
