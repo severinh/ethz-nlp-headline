@@ -45,10 +45,17 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	@Override
 	public String generate(Document document) {
-		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
+		String content = document.getContent();
+
+		// Drop prefixes such as: BRUSSELS, Belgium (AP) -
+		content = content.replaceAll("\\w+, \\w+ \\(AP\\) . ", "");
+
+		Annotation annotation = new Annotation(content);
+		getTokenizer().annotate(annotation);
+		getSentenceSplitter().annotate(annotation);
+
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
 		CoreMap firstSentence = sentences.get(0);
-
 		Annotation sentenceAnnotation = makeAnnotationFromSentence(firstSentence);
 
 		getPosTagger().annotate(sentenceAnnotation);
@@ -112,13 +119,17 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 			private static final long serialVersionUID = 1L;
 
-			private Set<String> DETERMINERS = ImmutableSet.of("a", "the");
+			private Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a", "the",
+					"have", "be");
 
 			@Override
 			public boolean accept(Tree tree) {
 				CoreLabel label = (CoreLabel) tree.label();
 				String lemma = label.lemma();
-				return !DETERMINERS.contains(lemma);
+				if (TRIMMED_LEMMAS.contains(lemma)) {
+					return false;
+				}
+				return true;
 			}
 
 		});
