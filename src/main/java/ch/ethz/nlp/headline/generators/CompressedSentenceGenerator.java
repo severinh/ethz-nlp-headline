@@ -31,6 +31,7 @@ public class CompressedSentenceGenerator extends CoreNLPGenerator {
 		getPosTagger().annotate(sentenceAnnotation);
 		getLemmatizer().annotate(sentenceAnnotation);
 		getParser().annotate(sentenceAnnotation);
+		getNER().annotate(sentenceAnnotation);
 
 		// Tree tree = firstSentence.get(TreeAnnotation.class);
 		// SemanticGraph dependencies = firstSentence

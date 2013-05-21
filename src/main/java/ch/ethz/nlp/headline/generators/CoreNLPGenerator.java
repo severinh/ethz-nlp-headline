@@ -1,16 +1,20 @@
 package ch.ethz.nlp.headline.generators;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import ch.ethz.nlp.headline.Document;
+import edu.stanford.nlp.ie.NERClassifierCombiner;
+import edu.stanford.nlp.ie.regexp.NumberSequenceClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.DefaultPaths;
 import edu.stanford.nlp.pipeline.MorphaAnnotator;
+import edu.stanford.nlp.pipeline.NERCombinerAnnotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
 import edu.stanford.nlp.pipeline.ParserAnnotator;
@@ -24,6 +28,7 @@ public abstract class CoreNLPGenerator implements Generator {
 	private static POSTaggerAnnotator POS_TAGGER_INSTANCE;
 	private static MorphaAnnotator LEMMATIZER_INSTANCE;
 	private static ParserAnnotator PARSER_INSTANCE;
+	private static NERCombinerAnnotator NER_INSTANCE;
 
 	public static Annotator getTokenizer() {
 		if (TOKENIZER_INSTANCE == null) {
@@ -60,6 +65,27 @@ public abstract class CoreNLPGenerator implements Generator {
 			PARSER_INSTANCE = new ParserAnnotator(false, Integer.MAX_VALUE);
 		}
 		return PARSER_INSTANCE;
+	}
+
+	public static Annotator getNER() {
+		if (NER_INSTANCE == null) {
+			String[] models = new String[] {
+					DefaultPaths.DEFAULT_NER_THREECLASS_MODEL,
+					DefaultPaths.DEFAULT_NER_MUC_MODEL,
+					DefaultPaths.DEFAULT_NER_CONLL_MODEL };
+			NERClassifierCombiner nerCombiner = null;
+			boolean applyNumericClassifiers = NERClassifierCombiner.APPLY_NUMERIC_CLASSIFIERS_DEFAULT;
+			boolean useSUTime = NumberSequenceClassifier.USE_SUTIME_DEFAULT;
+			try {
+				nerCombiner = new NERClassifierCombiner(
+						applyNumericClassifiers, useSUTime, models);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			NER_INSTANCE = new NERCombinerAnnotator(nerCombiner, false);
+		}
+		return NER_INSTANCE;
 	}
 
 	/**
