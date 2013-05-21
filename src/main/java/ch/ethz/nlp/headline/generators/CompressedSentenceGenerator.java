@@ -3,13 +3,26 @@ package ch.ethz.nlp.headline.generators;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
+import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.NamedEntityAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
+import edu.stanford.nlp.trees.semgraph.SemanticGraph;
+import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 public class CompressedSentenceGenerator extends CoreNLPGenerator {
+
+	private static final Logger LOG = LoggerFactory
+			.getLogger(CompressedSentenceGenerator.class);
 
 	public CompressedSentenceGenerator(Dataset dataset) throws IOException {
 
@@ -37,14 +50,20 @@ public class CompressedSentenceGenerator extends CoreNLPGenerator {
 		// SemanticGraph dependencies = firstSentence
 		// .get(CollapsedCCProcessedDependenciesAnnotation.class);
 
-		String result = firstSentence.toString();
+		StringBuilder builder = new StringBuilder();
+		for (CoreLabel label : firstSentence.get(TokensAnnotation.class)) {
+			if (!label.ner().equals("DATE")) {
+				builder.append(label.word());
+				builder.append(" ");
+			} else {
+				LOG.info("Trimming " + label.word());
+			}
+		}
 
-		// TODO: Actually do something
-
+		String result = builder.toString();
 		if (result.length() > MAX_LENGTH) {
 			result = result.substring(0, MAX_LENGTH);
 		}
 		return result;
 	}
-
 }
