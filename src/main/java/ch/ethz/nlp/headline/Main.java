@@ -55,10 +55,18 @@ public class Main {
 					e.printStackTrace();
 				}
 				peersMap.put(task, peer);
-				LOG.info(String.format("%s\t%s", generator.getId(), headline));
+				LOG.info(String.format("\u001B[33m%s\t%s\u001B[0m",
+						generator.getId(), headline));
+			}
+
+			List<Model> models = task.getModels();
+			for (int modelIndex = 0; modelIndex < models.size(); modelIndex++) {
+				Model model = models.get(modelIndex);
+				LOG.info(String.format("\u001B[34mMDL %d\t%s\u001B[0m",
+						modelIndex + 1, model.load()));
 			}
 		}
-		
+
 		for (CoreNLPGenerator generator : generators) {
 			LOG.info(generator.getStatistics().toString());
 		}
