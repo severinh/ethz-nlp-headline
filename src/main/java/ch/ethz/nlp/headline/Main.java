@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
@@ -14,10 +17,12 @@ import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CombinedSentenceGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
+import ch.ethz.nlp.headline.generators.CompressedSentenceGenerator;
 import ch.ethz.nlp.headline.generators.TfIdfWordsGenerator;
 
 public class Main {
 
+	private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 	private static final String EVALUATION_CONFIG_FILENAME = "evaluation.conf";
 
 	public static void main(String[] args) throws ClassNotFoundException,
@@ -30,10 +35,16 @@ public class Main {
 		generators.add(new PosFilteredGenerator(dataset));
 		generators.add(new TfIdfWordsGenerator(dataset));
 		generators.add(new CombinedSentenceGenerator(dataset));
+		generators.add(new CompressedSentenceGenerator(dataset));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
-		for (Task task : tasks) {
+		for (int i = 0; i < tasks.size(); i++) {
+			Task task = tasks.get(i);
 			Document document = task.getDocument();
+
+			LOG.info(String.format("Processing task %d of %d: %s", i,
+					tasks.size(), document.getId()));
+
 			for (Generator generator : generators) {
 				String headline = generator.generate(document);
 				Peer peer = dataset.makePeer(task, generator.getId());

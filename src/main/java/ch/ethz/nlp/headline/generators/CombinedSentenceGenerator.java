@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.DocumentId;
@@ -24,18 +27,22 @@ import edu.stanford.nlp.util.PriorityQueue;
  */
 public class CombinedSentenceGenerator extends TfIdfGenerator {
 
+	private static final Logger LOG = LoggerFactory
+			.getLogger(CombinedSentenceGenerator.class);
+
 	private final Set<String> openTags;
-	
+
 	private static final int MIN_LEN = 10;
 	private static final int LOW_POS = 1;
-	
+
 	private static final int LENGTH_WEIGHT = 2;
 	private static final int POS_WEIGHT = 6;
 	private static final double TFIDF_WEIGHT = 0.20;
 
-	public CombinedSentenceGenerator(Dataset dataset) throws IOException, ClassNotFoundException {
+	public CombinedSentenceGenerator(Dataset dataset) throws IOException,
+			ClassNotFoundException {
 		super(dataset);
-		
+
 		// Temporarily create a tagger to gain access to the list of open tags
 		MaxentTagger tagger = new MaxentTagger(MaxentTagger.DEFAULT_JAR_PATH);
 		openTags = tagger.getTags().getOpenTags();
@@ -55,7 +62,7 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
 		java.util.PriorityQueue<SentenceScores> allSentenceScores = new java.util.PriorityQueue<>(
 				10, Collections.reverseOrder());
-		
+
 		for (int i = 0; i < sentences.size(); i++) {
 			CoreMap sentence = sentences.get(i);
 			SentenceScores scores = new SentenceScores(sentence);
@@ -70,10 +77,10 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 			}
 			sentenceTfIdfScore /= labels.size();
 			scores.setTfIdfScore(sentenceTfIdfScore);
-			
+
 			// pos
 			scores.setPositionScore(i < LOW_POS ? 1 : 0);
-			
+
 			// length
 			int len = labels.size();
 			if (len >= MIN_LEN) {
@@ -81,10 +88,10 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 			} else {
 				scores.setLengthScore(len - MIN_LEN);
 			}
-			
+
 			allSentenceScores.add(scores);
 		}
-		
+
 		List<CoreMap> bestSentences = new LinkedList<>();
 		List<SentenceScores> bestScores = new LinkedList<>();
 		List<String> bestWords = new LinkedList<>();
@@ -93,13 +100,16 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 			CoreMap currentSentence = score.getSentence();
 			bestSentences.add(currentSentence);
 			bestScores.add(score);
-			
-			Annotation singleSentenceAnnotation = new Annotation(currentSentence.get(TextAnnotation.class));
+
+			Annotation singleSentenceAnnotation = new Annotation(
+					currentSentence.get(TextAnnotation.class));
 			List<CoreMap> singletonList = new LinkedList<>();
 			singletonList.add(currentSentence);
-			singleSentenceAnnotation.set(SentencesAnnotation.class, singletonList);
+			singleSentenceAnnotation.set(SentencesAnnotation.class,
+					singletonList);
 			getPosTagger().annotate(singleSentenceAnnotation);
-			List<CoreLabel> labels = currentSentence.get(TokensAnnotation.class);
+			List<CoreLabel> labels = currentSentence
+					.get(TokensAnnotation.class);
 			for (CoreLabel label : labels) {
 				String tag = label.get(PartOfSpeechAnnotation.class);
 				if (openTags.contains(tag)) {
@@ -107,8 +117,8 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 				}
 			}
 		}
-		
-		System.out.println(bestScores.get(0).toString());
+
+		LOG.debug(bestScores.get(0).toString());
 
 		StringBuilder builder = new StringBuilder();
 		for (String sortedTerm : bestWords) {
@@ -119,17 +129,17 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 		}
 
 		String result = builder.toString().trim();
-		System.out.println(result);
-		System.out.println("---");
+		LOG.debug(result);
+		LOG.debug("---");
 		return result;
 	}
-	
+
 	public class SentenceScores implements Comparable<SentenceScores> {
 		private final CoreMap sentence;
 		double tfIdfScore;
 		double positionScore;
 		double lengthScore;
-		
+
 		public double getTfIdfScore() {
 			return tfIdfScore;
 		}
@@ -163,7 +173,8 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 		}
 
 		public double getCombinedScore() {
-			return TFIDF_WEIGHT*tfIdfScore + POS_WEIGHT*positionScore + LENGTH_WEIGHT*lengthScore;
+			return TFIDF_WEIGHT * tfIdfScore + POS_WEIGHT * positionScore
+					+ LENGTH_WEIGHT * lengthScore;
 		}
 
 		@Override
@@ -178,11 +189,12 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 				return 0;
 			}
 		}
-		
+
 		@Override
 		public String toString() {
-			return "total: " + getCombinedScore() + ", tfidf: " + tfIdfScore + ", pos: " + positionScore + ", " + lengthScore;
+			return "total: " + getCombinedScore() + ", tfidf: " + tfIdfScore
+					+ ", pos: " + positionScore + ", " + lengthScore;
 		}
-		
+
 	}
 }

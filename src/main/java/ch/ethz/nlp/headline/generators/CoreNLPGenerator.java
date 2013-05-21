@@ -1,8 +1,12 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import ch.ethz.nlp.headline.Document;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.DefaultPaths;
@@ -11,6 +15,7 @@ import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
 import edu.stanford.nlp.pipeline.ParserAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+import edu.stanford.nlp.util.CoreMap;
 
 public abstract class CoreNLPGenerator implements Generator {
 
@@ -45,7 +50,7 @@ public abstract class CoreNLPGenerator implements Generator {
 
 	public static Annotator getLemmatizer() {
 		if (LEMMATIZER_INSTANCE == null) {
-			LEMMATIZER_INSTANCE = new MorphaAnnotator();
+			LEMMATIZER_INSTANCE = new MorphaAnnotator(false);
 		}
 		return LEMMATIZER_INSTANCE;
 	}
@@ -79,4 +84,12 @@ public abstract class CoreNLPGenerator implements Generator {
 		getSentenceSplitter().annotate(resultAnnotation);
 		return resultAnnotation;
 	}
+
+	public Annotation makeAnnotationFromSentence(CoreMap sentence) {
+		Annotation result = new Annotation(sentence.get(TextAnnotation.class));
+		List<CoreMap> sentences = Collections.singletonList(sentence);
+		result.set(SentencesAnnotation.class, sentences);
+		return result;
+	}
+
 }
