@@ -3,6 +3,7 @@ package ch.ethz.nlp.headline.generators;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -69,6 +70,8 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		sTree = removeLowContentNodes(sTree);
 		sTree = shortenIterativelyRule1(sTree);
 		sTree = shortenIterativelyRule2(sTree);
+		
+		sTree = simplifyPersonNames(sTree);
 
 		String result = treeToString(sTree, MAX_LENGTH);
 		getStatistics().addSummaryResult(result);
@@ -103,6 +106,39 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			}
 		}
 		return result;
+	}
+	
+	private boolean isPerson(CoreLabel label) {
+		return label.ner() != null && label.ner().equals("PERSON");
+
+	}
+	
+	private Tree simplifyPersonNames(Tree tree) {
+		final Set<String> namesToRemove = new HashSet<>();
+		List<Label> labels = tree.yield();
+		for (int i = 0; i < labels.size()-1; i++) {
+			CoreLabel thisLabel = (CoreLabel) labels.get(i);
+			CoreLabel nextLabel = (CoreLabel) labels.get(i+1);
+			if (isPerson(thisLabel) && isPerson(nextLabel)) {
+				System.out.println("Person found: " + thisLabel.originalText() + " " + nextLabel.originalText());
+				namesToRemove.add(thisLabel.originalText());
+			}
+		}
+		
+		tree = tree.prune(new Filter<Tree>() {
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean accept(Tree tree) {
+				CoreLabel label = (CoreLabel) tree.label();
+				String text = label.originalText();
+				return !namesToRemove.contains(text);
+			}
+
+		});
+		
+		return tree;
 	}
 
 	private Tree removeLowContentNodes(Tree tree) {
