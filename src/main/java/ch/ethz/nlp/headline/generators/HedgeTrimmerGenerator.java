@@ -51,6 +51,10 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		// Drop prefixes such as: BRUSSELS, Belgium (AP) -
 		content = content.replaceAll("\\w+, \\w+ \\(AP\\) . ", "");
 
+		content = content.replaceAll("United States", "U.S.");
+		content = content.replaceAll("America Online", "AOL");
+		content = content.replaceAll("Corp.", "");
+
 		Annotation annotation = new Annotation(content);
 		getTokenizer().annotate(annotation);
 		getSentenceSplitter().annotate(annotation);
@@ -78,7 +82,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		sTree = removeLowContentNodes(sTree);
 		sTree = shortenIterativelyRule1(sTree);
 		sTree = shortenIterativelyRule2(sTree);
-		
+
 		sTree = simplifyPersonNames(sTree);
 
 		String result = treeToString(sTree, Integer.MAX_VALUE);
@@ -116,23 +120,23 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		}
 		return result;
 	}
-	
+
 	private boolean isPerson(CoreLabel label) {
 		return label.ner() != null && label.ner().equals("PERSON");
 
 	}
-	
+
 	private Tree simplifyPersonNames(Tree tree) {
 		final Set<String> namesToRemove = new HashSet<>();
 		List<Label> labels = tree.yield();
-		for (int i = 0; i < labels.size()-1; i++) {
+		for (int i = 0; i < labels.size() - 1; i++) {
 			CoreLabel thisLabel = (CoreLabel) labels.get(i);
-			CoreLabel nextLabel = (CoreLabel) labels.get(i+1);
+			CoreLabel nextLabel = (CoreLabel) labels.get(i + 1);
 			if (isPerson(thisLabel) && isPerson(nextLabel)) {
 				namesToRemove.add(thisLabel.originalText());
 			}
 		}
-		
+
 		tree = tree.prune(new Filter<Tree>() {
 
 			private static final long serialVersionUID = 1L;
@@ -141,11 +145,15 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			public boolean accept(Tree tree) {
 				CoreLabel label = (CoreLabel) tree.label();
 				String text = label.originalText();
-				return !namesToRemove.contains(text);
+				if (namesToRemove.contains(text)) {
+					logTrimming(tree, "First Name");
+					return false;
+				}
+				return true;
 			}
 
 		});
-		
+
 		return tree;
 	}
 
@@ -155,7 +163,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 			private static final long serialVersionUID = 1L;
 
 			private Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a", "the",
-					"have", "be");
+					"have", "be", "its");
 
 			@Override
 			public boolean accept(Tree tree) {
