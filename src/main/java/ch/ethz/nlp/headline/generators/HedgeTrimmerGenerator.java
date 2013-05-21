@@ -38,7 +38,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	@Override
 	public String getId() {
-		return "HEDGE-TRIMMER";
+		return "HEDGE";
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
 				// time expression
 				// Currently disabled because it trims too much in some cases
-				if (false && tree.value().equals("PP")) {
+				if (true && tree.value().equals("PP")) {
 					Stack<Tree> treeStack = new Stack<>();
 					treeStack.addAll(Arrays.asList(tree.children()));
 					while (!treeStack.isEmpty()) {
@@ -226,7 +226,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	private void logTrimming(Tree trimmedTree, String rule) {
 		String trimmedText = StringUtils.join(trimmedTree.yieldWords(), " ");
-		LOG.info("Trimming '" + trimmedText + "' [" + rule + "]");
+		LOG.debug("Trimming '" + trimmedText + "' [" + rule + "]");
 	}
 
 }

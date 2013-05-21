@@ -25,7 +25,7 @@ public class BaselineGenerator extends CoreNLPGenerator {
 	public String generate(Document document) throws IOException {
 		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 		CoreMap sentenceMap = annotation.get(SentencesAnnotation.class).get(0);
-		String result = sentenceMap.toString();
+		String result = sentenceMap.toString().replaceAll("\\n", " ");
 		if (result.length() > MAX_LENGTH) {
 			result = result.substring(0, MAX_LENGTH);
 		}
