@@ -21,6 +21,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
+import edu.stanford.nlp.parser.tools.PunctEquivalenceClasser;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -217,13 +218,14 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		for (Label label : tree.yield()) {
 			CoreLabel coreLabel = (CoreLabel) label;
 			String word = coreLabel.word();
+			if (!PunctEquivalenceClasser.getPunctClass(word).isEmpty()) {
+				continue;
+			}
 			if (builder.length() + word.length() > maxLength) {
 				break;
 			}
 			builder.append(word);
-			if (!word.equals(",")) {
-				builder.append(" ");
-			}
+			builder.append(" ");
 		}
 		String result = builder.toString();
 		return result;
