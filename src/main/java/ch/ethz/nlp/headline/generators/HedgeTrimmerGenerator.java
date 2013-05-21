@@ -44,7 +44,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(Document document) throws IOException {
+	public String generate(Document document) {
 		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
 		CoreMap firstSentence = sentences.get(0);

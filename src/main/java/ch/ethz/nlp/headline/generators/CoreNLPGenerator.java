@@ -1,7 +1,6 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +87,7 @@ public abstract class CoreNLPGenerator implements Generator {
 		}
 		return NER_INSTANCE;
 	}
-	
+
 	private GeneratorStatistics statistics = new GeneratorStatistics();
 
 	public GeneratorStatistics getStatistics() {
@@ -100,10 +99,8 @@ public abstract class CoreNLPGenerator implements Generator {
 	 * 
 	 * @param document
 	 */
-	public Annotation getTokenizedDocumentAnnotation(Document document)
-			throws IOException {
-		String content = document.load();
-		Annotation annotation = new Annotation(content);
+	public Annotation getTokenizedDocumentAnnotation(Document document) {
+		Annotation annotation = new Annotation(document.getContent());
 		getTokenizer().annotate(annotation);
 		return annotation;
 	}
@@ -111,8 +108,7 @@ public abstract class CoreNLPGenerator implements Generator {
 	/**
 	 * Create an annotation with tokens and sentences of the given document.
 	 */
-	public Annotation getTokenizedSentenceDocumentAnnotation(Document document)
-			throws IOException {
+	public Annotation getTokenizedSentenceDocumentAnnotation(Document document) {
 		Annotation resultAnnotation = getTokenizedDocumentAnnotation(document);
 		getSentenceSplitter().annotate(resultAnnotation);
 		return resultAnnotation;
@@ -124,22 +120,22 @@ public abstract class CoreNLPGenerator implements Generator {
 		result.set(SentencesAnnotation.class, sentences);
 		return result;
 	}
-	
+
 	protected String truncate(String headline) {
-		
+
 		if (headline.length() > MAX_LENGTH) {
 			headline = headline.substring(0, MAX_LENGTH);
 		}
 		return headline;
 	}
-	
+
 	public class GeneratorStatistics {
 		private List<Integer> summaryLengths = new ArrayList<>();
-		
+
 		public void addSummaryResult(String summary) {
 			summaryLengths.add(summary.length());
 		}
-		
+
 		@Override
 		public String toString() {
 			int summaries = summaryLengths.size();
@@ -152,7 +148,7 @@ public abstract class CoreNLPGenerator implements Generator {
 				totalLength += i;
 			}
 			double avgLength = totalLength / summaries;
-			
+
 			StringBuilder sb = new StringBuilder();
 			sb.append(getId() + " statistics:\n");
 			sb.append(String.format("Too long: %d/%d\n", tooLong, summaries));

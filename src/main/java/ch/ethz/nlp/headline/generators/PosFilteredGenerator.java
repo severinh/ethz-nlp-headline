@@ -37,7 +37,7 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(Document document) throws IOException {
+	public String generate(Document document) {
 		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 
 		// POS-tag the first sentence. Since the tagger exects an annotation with sentences,

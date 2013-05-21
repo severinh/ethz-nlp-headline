@@ -1,6 +1,5 @@
 package ch.ethz.nlp.headline;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public interface Model {
@@ -11,6 +10,6 @@ public interface Model {
 
 	public DocumentId getDocumentId();
 
-	public String load() throws IOException;
+	public String getContent();
 
 }

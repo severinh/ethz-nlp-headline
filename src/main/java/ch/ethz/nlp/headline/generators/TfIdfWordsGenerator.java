@@ -18,7 +18,7 @@ public class TfIdfWordsGenerator extends TfIdfGenerator {
 	}
 
 	@Override
-	public String generate(Document document) throws IOException {
+	public String generate(Document document) {
 		PriorityQueue<String> tfIdfMap = getTfIdfMap(document.getId());
 
 		// Build the headline from the words with the highest tf-idf score

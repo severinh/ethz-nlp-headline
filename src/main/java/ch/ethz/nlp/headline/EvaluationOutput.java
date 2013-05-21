@@ -55,7 +55,7 @@ public class EvaluationOutput {
 
 		for (int modelIndex = 0; modelIndex < models.size(); modelIndex++) {
 			Model model = models.get(modelIndex);
-			String content = model.load();
+			String content = model.getContent();
 			modelLemmas.addAll(getLemmas(getLabels(content)));
 
 			String logString = String.format("MDL %d\t%s", modelIndex, content);

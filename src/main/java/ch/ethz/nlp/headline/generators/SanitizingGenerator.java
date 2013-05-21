@@ -1,7 +1,5 @@
 package ch.ethz.nlp.headline.generators;
 
-import java.io.IOException;
-
 import ch.ethz.nlp.headline.Document;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -15,7 +13,7 @@ public class SanitizingGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(Document document) throws IOException {
+	public String generate(Document document) {
 		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
 		CoreMap sentenceMap = annotation.get(SentencesAnnotation.class).get(0);
 		String result = sentenceMap.toString();

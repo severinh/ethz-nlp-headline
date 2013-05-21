@@ -12,8 +12,9 @@ public class Duc2004Model implements Model {
 	private final Path path;
 	private final DocumentId documentId;
 	private final String id;
+	private final String content;
 
-	public Duc2004Model(Path path) {
+	public Duc2004Model(Path path) throws IOException {
 		String[] parts = path.getFileName().toString().split("\\.");
 		String documentSet = (parts[0] + parts[3]).toLowerCase();
 		String documentName = (parts[5] + "." + parts[6]);
@@ -21,6 +22,7 @@ public class Duc2004Model implements Model {
 		this.path = path;
 		this.documentId = new DocumentId(documentSet, documentName);
 		this.id = parts[4];
+		this.content = new String(Files.readAllBytes(getPath())).trim();
 	}
 
 	@Override
@@ -38,14 +40,13 @@ public class Duc2004Model implements Model {
 	}
 
 	@Override
-	public String toString() {
-		return "Model [documentId=" + documentId + ", id=" + id + "]";
+	public String getContent() {
+		return content;
 	}
 
 	@Override
-	public String load() throws IOException {
-		String result = new String(Files.readAllBytes(getPath()));
-		return result.trim();
+	public String toString() {
+		return "Model [documentId=" + documentId + ", id=" + id + "]";
 	}
 
 }
