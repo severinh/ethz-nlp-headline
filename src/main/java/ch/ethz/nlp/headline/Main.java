@@ -14,7 +14,6 @@ import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
-import ch.ethz.nlp.headline.generators.PosFilteredGenerator;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -30,12 +29,12 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<CoreNLPGenerator> generators = new ArrayList<>();
-		// generators.add(new BaselineGenerator(dataset));
+		generators.add(new BaselineGenerator(dataset));
 		// generators.add(new SanitizingGenerator());
-		generators.add(new PosFilteredGenerator(dataset));
+		// generators.add(new PosFilteredGenerator(dataset));
 		// generators.add(new TfIdfWordsGenerator(dataset));
 		// generators.add(new CombinedSentenceGenerator(dataset));
-		// generators.add(new HedgeTrimmerGenerator(dataset));
+		generators.add(new HedgeTrimmerGenerator(dataset));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		EvaluationOutput evaluationOutput = new EvaluationOutput();
