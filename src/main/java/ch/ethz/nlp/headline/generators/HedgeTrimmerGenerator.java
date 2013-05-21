@@ -129,7 +129,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
 				// time expression
 				// Currently disabled because it trims too much in some cases
-				if (true && tree.value().equals("PP")) {
+				if (false && tree.value().equals("PP")) {
 					Stack<Tree> treeStack = new Stack<>();
 					treeStack.addAll(Arrays.asList(tree.children()));
 					while (!treeStack.isEmpty()) {
