@@ -1,5 +1,7 @@
 package ch.ethz.nlp.headline.duc2004;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import ch.ethz.nlp.headline.DocumentId;
@@ -38,6 +40,12 @@ public class Duc2004Model implements Model {
 	@Override
 	public String toString() {
 		return "Model [documentId=" + documentId + ", id=" + id + "]";
+	}
+
+	@Override
+	public String load() throws IOException {
+		String result = new String(Files.readAllBytes(getPath()));
+		return result.trim();
 	}
 
 }
