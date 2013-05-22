@@ -1,6 +1,7 @@
 package ch.ethz.nlp.headline.compressor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +24,7 @@ public class BlacklistTreeFilter implements Filter<Tree> {
 	private final Set<LabelSpan> blacklist;
 	private final List<Tree> prunedTrees;
 
-	public BlacklistTreeFilter(List<? extends CoreLabel> blacklist) {
+	public BlacklistTreeFilter(Collection<? extends CoreLabel> blacklist) {
 		super();
 
 		// Referential equality of labels in the blacklist and the tree is not

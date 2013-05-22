@@ -1,6 +1,5 @@
 package ch.ethz.nlp.headline.compressor;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -18,11 +17,9 @@ public class AppositivePruner extends TreeCompressor {
 	@Override
 	protected Tree compress(Tree tree, CoreMap sentence) {
 		SemanticGraph graph = sentence.get(BasicDependenciesAnnotation.class);
+		Set<IndexedWord> appositiveWords = new HashSet<>();
 
-		final Set<IndexedWord> appositiveWords = new HashSet<>();
-
-		Set<IndexedWord> words = graph.vertexSet();
-		for (IndexedWord word : words) {
+		for (IndexedWord word : graph.vertexSet()) {
 			Set<GrammaticalRelation> relations = graph.relns(word);
 			for (GrammaticalRelation relation : relations) {
 				if (Objects.equals(relation.getShortName(), "appos")) {
@@ -44,7 +41,7 @@ public class AppositivePruner extends TreeCompressor {
 
 		if (!appositiveWords.isEmpty()) {
 			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(
-					new ArrayList<>(appositiveWords));
+					appositiveWords);
 
 			tree = tree.prune(treeFilter);
 			logTrimming(treeFilter.getPrunedWords(), "Appositive");
