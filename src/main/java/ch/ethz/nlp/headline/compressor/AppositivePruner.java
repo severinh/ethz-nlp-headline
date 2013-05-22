@@ -7,18 +7,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import ch.ethz.nlp.headline.EvaluationOutput.AnsiColor;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.semgraph.SemanticGraph;
 import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.Filter;
-import edu.stanford.nlp.util.StringUtils;
 
 public class AppositivePruner extends TreeCompressor {
 
@@ -26,64 +20,46 @@ public class AppositivePruner extends TreeCompressor {
 	protected Tree compress(Tree tree, CoreMap sentence) {
 		SemanticGraph graph = sentence.get(BasicDependenciesAnnotation.class);
 
-		final Set<IndexedWord> appositiveWords = new HashSet<>();
+		for (IndexedWord root : getAppositiveRoots(graph)) {
+			Set<IndexedWord> blacklist = getChildrenRecursively(graph, root);
+			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(blacklist);
 
-		Set<IndexedWord> words = graph.vertexSet();
-		for (IndexedWord word : words) {
+			tree = tree.prune(treeFilter);
+			logTrimming(treeFilter.getPrunedWords(), "Appositive");
+		}
+
+		return tree;
+	}
+
+	private List<IndexedWord> getAppositiveRoots(SemanticGraph graph) {
+		List<IndexedWord> appositiveRoots = new ArrayList<>();
+		for (IndexedWord word : graph.vertexSet()) {
 			Set<GrammaticalRelation> relations = graph.relns(word);
 			for (GrammaticalRelation relation : relations) {
 				if (Objects.equals(relation.getShortName(), "appos")) {
-					Stack<IndexedWord> stack = new Stack<>();
-					stack.add(word);
-					while (!stack.isEmpty()) {
-						IndexedWord appositiveWord = stack.pop();
-						appositiveWords.add(appositiveWord);
-						for (IndexedWord child : graph
-								.getChildren(appositiveWord)) {
-							if (!appositiveWords.contains(child)) {
-								stack.add(child);
-							}
-						}
-					}
+					appositiveRoots.add(word);
+				}
+			}
+		}
+		return appositiveRoots;
+	}
+
+	private Set<IndexedWord> getChildrenRecursively(SemanticGraph graph,
+			IndexedWord root) {
+		Set<IndexedWord> result = new HashSet<>();
+
+		Stack<IndexedWord> stack = new Stack<>();
+		stack.add(root);
+		while (!stack.isEmpty()) {
+			IndexedWord word = stack.pop();
+			result.add(word);
+			for (IndexedWord child : graph.getChildren(word)) {
+				if (!result.contains(child)) {
+					stack.add(child);
 				}
 			}
 		}
 
-		if (!appositiveWords.isEmpty()) {
-			final List<String> prunedWords = new ArrayList<>();
-
-			tree = tree.prune(new Filter<Tree>() {
-
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean accept(Tree tree) {
-					CoreLabel label = (CoreLabel) tree.label();
-					if (label != null && label.word() != null) {
-						for (IndexedWord appositiveLabel : appositiveWords) {
-							if (Objects.equals(label
-									.get(BeginIndexAnnotation.class),
-									appositiveLabel
-											.get(BeginIndexAnnotation.class))
-									&& Objects.equals(
-											label.get(EndIndexAnnotation.class),
-											appositiveLabel
-													.get(EndIndexAnnotation.class))) {
-								prunedWords.add(label.word());
-								return false;
-							}
-						}
-
-					}
-					return true;
-				}
-
-			});
-
-			String trimmedText = StringUtils.join(prunedWords, " ");
-			logTrimming(trimmedText, AnsiColor.PURPLE.makeString("Appositive"));
-		}
-
-		return tree;
+		return result;
 	}
 }
