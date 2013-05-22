@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.util.DocumentInspector"
