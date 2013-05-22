@@ -1,6 +1,7 @@
 package ch.ethz.nlp.headline;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
+import ch.ethz.nlp.headline.util.RougeN;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -18,6 +20,9 @@ public class EvaluationOutput {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(EvaluationOutput.class);
+
+	private static final double ROUGE_1_THRESHOLD = 0.20;
+	private static final double ROUGE_2_THRESHOLD = 0.05;
 
 	public enum AnsiColor {
 		RESET("\u001B[0m"), BLACK("\u001B[30m"), RED("\u001B[31m"), GREEN(
@@ -53,17 +58,21 @@ public class EvaluationOutput {
 	}
 
 	public void log(Task task, Collection<Peer> peers) throws IOException {
+		List<Annotation> modelAnnotations = new ArrayList<>();
 		Set<String> modelUnigrams = new HashSet<>();
 		Set<String> modelBigrams = new HashSet<>();
+		RougeN rouge1 = new RougeN(1);
+		RougeN rouge2 = new RougeN(2);
 
 		for (Model model : task.getModels()) {
 			String modelContent = model.getContent();
 			Annotation annotation = getAnnotation(modelContent);
 
+			modelAnnotations.add(annotation);
 			modelUnigrams.addAll(CoreNLPUtil.getNGrams(annotation, 1));
 			modelBigrams.addAll(CoreNLPUtil.getNGrams(annotation, 2));
 
-			String logString = String.format("MODEL\t%s", modelContent);
+			String logString = String.format("MODEL\t\t\t%s", modelContent);
 			LOG.info(modelColor.makeString(logString));
 		}
 
@@ -99,9 +108,10 @@ public class EvaluationOutput {
 				}
 
 				String word = label.word();
-				if (!word.equals("'s")) {
+				if (i != 0 && !word.equals("'s")) {
 					builder.append(" ");
 				}
+
 				if (isInModelBigram) {
 					word = bigramHitColor.makeString(word);
 				} else if (isInModelUnigram) {
@@ -109,9 +119,25 @@ public class EvaluationOutput {
 				}
 
 				builder.append(word);
-
 			}
-			LOG.info(String.format("%s\t%s", generatorId, builder.toString()));
+
+			double rouge1Recall = rouge1.compute(modelAnnotations, annotation);
+			double rouge2Recall = rouge2.compute(modelAnnotations, annotation);
+			String rouge1String = String.format("%.2f", rouge1Recall);
+			String rouge2String = String.format("%.2f", rouge2Recall);
+
+			if (!generatorId.equals("BASE")) {
+				if (rouge1Recall < ROUGE_1_THRESHOLD) {
+					rouge1String = AnsiColor.RED.makeString(rouge1String);
+				}
+
+				if (rouge2Recall < ROUGE_2_THRESHOLD) {
+					rouge2String = AnsiColor.RED.makeString(rouge2String);
+				}
+			}
+
+			LOG.info(String.format("%s\t%s\t%s\t%s", generatorId, rouge1String,
+					rouge2String, builder.toString()));
 		}
 	}
 
