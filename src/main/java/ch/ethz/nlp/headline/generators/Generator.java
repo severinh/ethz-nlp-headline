@@ -1,7 +1,5 @@
 package ch.ethz.nlp.headline.generators;
 
-import ch.ethz.nlp.headline.Document;
-
 public interface Generator {
 
 	/**
@@ -11,6 +9,6 @@ public interface Generator {
 
 	public String getId();
 
-	public String generate(Document document);
+	public String generate(String content);
 
 }

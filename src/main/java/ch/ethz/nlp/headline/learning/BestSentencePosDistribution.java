@@ -98,10 +98,7 @@ public class BestSentencePosDistribution {
 
 	private Annotation getAnnotation(String content) {
 		Annotation annotation = new Annotation(content);
-		CoreNLPUtil.getTokenizer().annotate(annotation);
-		CoreNLPUtil.getSentenceSplitter().annotate(annotation);
-		CoreNLPUtil.getPosTagger().annotate(annotation);
-		CoreNLPUtil.getLemmatizer().annotate(annotation);
+		CoreNLPUtil.ensureLemmaAnnotation(annotation);
 		return annotation;
 	}
 

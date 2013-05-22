@@ -20,9 +20,10 @@ public class CombinedPreprocessor implements ContentPreprocessor {
 		return content;
 	}
 
-	public static ContentPreprocessor ofAll() {
-		return new CombinedPreprocessor(ImmutableList.of(new AcronymCreator(),
-				new ContentSanitizer()));
+	public static ContentPreprocessor all() {
+		ContentPreprocessor result = new CombinedPreprocessor(ImmutableList.of(
+				new AcronymCreator(), new ContentSanitizer()));
+		return result;
 	}
 
 }

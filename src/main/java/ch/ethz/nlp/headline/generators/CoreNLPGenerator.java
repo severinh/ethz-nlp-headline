@@ -1,58 +1,14 @@
 package ch.ethz.nlp.headline.generators;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.util.CoreMap;
-
 public abstract class CoreNLPGenerator implements Generator {
-
-	// Temporary redirect for generators that do not need the document anymore
-	public String generate(Document document) {
-		return generate(document.getContent());
-	}
-
-	public String generate(String content) {
-		return content;
-	}
 
 	private GeneratorStatistics statistics = new GeneratorStatistics();
 
 	public GeneratorStatistics getStatistics() {
 		return statistics;
-	}
-
-	/**
-	 * Create an annotation with the tokens of the given document.
-	 * 
-	 * @param document
-	 */
-	public Annotation getTokenizedDocumentAnnotation(Document document) {
-		Annotation annotation = new Annotation(document.getContent());
-		CoreNLPUtil.getTokenizer().annotate(annotation);
-		return annotation;
-	}
-
-	/**
-	 * Create an annotation with tokens and sentences of the given document.
-	 */
-	public Annotation getTokenizedSentenceDocumentAnnotation(Document document) {
-		Annotation resultAnnotation = getTokenizedDocumentAnnotation(document);
-		CoreNLPUtil.getSentenceSplitter().annotate(resultAnnotation);
-		return resultAnnotation;
-	}
-
-	public Annotation makeAnnotationFromSentence(CoreMap sentence) {
-		Annotation result = new Annotation(sentence.get(TextAnnotation.class));
-		List<CoreMap> sentences = Collections.singletonList(sentence);
-		result.set(SentencesAnnotation.class, sentences);
-		return result;
 	}
 
 	protected String truncate(String headline) {

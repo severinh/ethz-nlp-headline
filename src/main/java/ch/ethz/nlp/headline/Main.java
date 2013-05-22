@@ -11,11 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
-import ch.ethz.nlp.headline.generators.CombinedSentenceGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
-import ch.ethz.nlp.headline.selection.TfIdfProvider;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -32,10 +30,10 @@ public class Main {
 
 		List<CoreNLPGenerator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator());
-		// generators.add(new PosFilteredGenerator(dataset));
+		// generators.add(new PosFilteredGenerator());
 		// TfIdfProvider tfIdfProvider = TfIdfProvider.of(dataset);
 		// generators.add(new CombinedSentenceGenerator(tfIdfProvider));
-		// generators.add(new HedgeTrimmerGenerator(dataset));
+		generators.add(new HedgeTrimmerGenerator());
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		EvaluationOutput evaluationOutput = new EvaluationOutput();
@@ -48,7 +46,8 @@ public class Main {
 					tasks.size(), document.getId()));
 
 			for (Generator generator : generators) {
-				String headline = generator.generate(document);
+				String content = document.getContent();
+				String headline = generator.generate(content);
 				Peer peer = dataset.makePeer(task, generator.getId());
 				try {
 					peer.store(headline);

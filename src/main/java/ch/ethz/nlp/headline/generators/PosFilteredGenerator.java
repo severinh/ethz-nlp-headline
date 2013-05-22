@@ -1,35 +1,14 @@
 package ch.ethz.nlp.headline.generators;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import ch.ethz.nlp.headline.Dataset;
-import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
+import ch.ethz.nlp.headline.compressor.ClosedPosFilter;
+import ch.ethz.nlp.headline.selection.FirstSentenceSelector;
+import ch.ethz.nlp.headline.selection.SentencesSelector;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.tagger.maxent.MaxentTagger;
-import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.StringUtils;
 
 public class PosFilteredGenerator extends CoreNLPGenerator {
 
-	private final Set<String> openTags;
-
-	public PosFilteredGenerator(Dataset dataset) throws IOException,
-			ClassNotFoundException {
-
-		// Temporarily create a tagger to gain access to the list of open tags
-		MaxentTagger tagger = new MaxentTagger(MaxentTagger.DEFAULT_JAR_PATH);
-		openTags = tagger.getTags().getOpenTags();
-	}
+	private final SentencesSelector sentencesSelector = new FirstSentenceSelector();
+	private final ClosedPosFilter closedPosFilter = new ClosedPosFilter();
 
 	@Override
 	public String getId() {
@@ -37,30 +16,15 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(Document document) {
-		Annotation annotation = getTokenizedSentenceDocumentAnnotation(document);
+	public String generate(String content) {
+		Annotation annotation = new Annotation(content);
 
-		// POS-tag the first sentence. Since the tagger exects an annotation with sentences,
-		// we create a new annotation with only that sentence under the key SentencesAnnotation.
-		CoreMap firstSentenceMap = annotation.get(SentencesAnnotation.class).get(0);
-		Annotation singleSentenceAnnotation = new Annotation(firstSentenceMap.get(TextAnnotation.class));
-		List<CoreMap> singletonList = new LinkedList<>();
-		singletonList.add(firstSentenceMap);
-		singleSentenceAnnotation.set(SentencesAnnotation.class, singletonList);
-		CoreNLPUtil.getPosTagger().annotate(singleSentenceAnnotation);
-		
-		List<CoreLabel> labels = firstSentenceMap.get(TokensAnnotation.class);
-		List<String> wordsWithOpenTag = new ArrayList<>();
+		annotation = sentencesSelector.select(annotation);
+		annotation = closedPosFilter.compress(annotation);
 
-		for (CoreLabel label : labels) {
-			String tag = label.get(PartOfSpeechAnnotation.class);
-			if (openTags.contains(tag)) {
-				wordsWithOpenTag.add(label.word());
-			}
-		}
-
-		String result =  StringUtils.join(wordsWithOpenTag);
+		String result = annotation.toString();
 		getStatistics().addSummaryResult(result);
+
 		return truncate(result);
 	}
 

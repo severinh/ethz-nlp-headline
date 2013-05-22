@@ -26,6 +26,7 @@ public class PersonNameSimplifier implements SentencesCompressor {
 	@Override
 	public Annotation compress(Annotation annotation) {
 		CoreNLPUtil.ensureNamedEntityTagAnnotation(annotation);
+		CoreNLPUtil.ensureTreeAnnotation(annotation);
 
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			Tree tree = sentence.get(TreeAnnotation.class);
