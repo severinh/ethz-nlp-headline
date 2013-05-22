@@ -2,6 +2,12 @@ package ch.ethz.nlp.headline.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.NamedEntityAnnotation;
 import edu.stanford.nlp.ie.NERClassifierCombiner;
@@ -10,6 +16,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
@@ -23,6 +30,7 @@ import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.StringUtils;
 
 public class CoreNLPUtil {
 
@@ -160,6 +168,51 @@ public class CoreNLPUtil {
 		if (!firstLabel.has(NamedEntityAnnotation.class)) {
 			getNER().annotate(annotation);
 		}
+	}
+
+	public static Set<String> getNGrams(Annotation annotation, int n) {
+		Set<String> result = new HashSet<>();
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
+			for (int i = 0; i < labels.size() - n + 1; i++) {
+				List<CoreLabel> subLabels = labels.subList(i, i + n);
+				List<String> lemmas = Lists.transform(subLabels,
+						LEMMA_TO_STRING);
+				String nGram = StringUtils.join(lemmas, " ");
+				result.add(nGram);
+			}
+		}
+
+		return result;
+	}
+
+	private static final Function<CoreLabel, String> LEMMA_TO_STRING = new Function<CoreLabel, String>() {
+
+		@Override
+		public String apply(CoreLabel input) {
+			return input.lemma();
+		}
+
+	};
+
+	public static final Annotation sentencesToAnnotation(List<CoreMap> sentences) {
+		// The text is probably only for debugging convenience
+		// The CharacterOffset*Annotation and Token*Annotation of individual
+		// sentences will not be in sync with the new text, but rather refer to
+		// the original text. This may not necessarily be a problem.
+		Annotation result = new Annotation(sentencesToText(sentences));
+		result.set(SentencesAnnotation.class, sentences);
+
+		return result;
+	}
+
+	private static String sentencesToText(List<CoreMap> sentences) {
+		StringBuilder builder = new StringBuilder();
+		for (CoreMap sentence : sentences) {
+			builder.append(sentence.get(TextAnnotation.class));
+			builder.append(" ");
+		}
+		return builder.toString().trim();
 	}
 
 }

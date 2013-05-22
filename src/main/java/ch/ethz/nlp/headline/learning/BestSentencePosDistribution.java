@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
+
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
@@ -67,25 +69,25 @@ public class BestSentencePosDistribution {
 		Document document = task.getDocument();
 		String documentContent = document.getContent();
 
+		List<Annotation> models = new ArrayList<>();
+		for (Model model : task.getModels()) {
+			String modelContent = model.getContent();
+			models.add(getAnnotation(modelContent));
+		}
+
 		Annotation documentAnnotation = getAnnotation(documentContent);
 		List<CoreMap> sentences = documentAnnotation
 				.get(SentencesAnnotation.class);
-
-		List<CoreMap> models = new ArrayList<>();
-		for (Model model : task.getModels()) {
-			String modelContent = model.getContent();
-			Annotation modelAnnotation = getAnnotation(modelContent);
-			CoreMap modelSentence = modelAnnotation.get(
-					SentencesAnnotation.class).get(0);
-			models.add(modelSentence);
-		}
 
 		int bestPos = 0;
 		double bestRecall = 0.0;
 
 		for (int pos = 0; pos < sentences.size(); pos++) {
 			CoreMap sentence = sentences.get(pos);
-			double recall = rouge.compute(models, sentence);
+			Annotation sentenceAnnotation = CoreNLPUtil
+					.sentencesToAnnotation(ImmutableList.of(sentence));
+
+			double recall = rouge.compute(models, sentenceAnnotation);
 
 			if (recall > bestRecall) {
 				bestPos = pos;

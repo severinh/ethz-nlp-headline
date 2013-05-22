@@ -37,28 +37,33 @@ public class EvaluationOutput {
 	}
 
 	private final AnsiColor modelColor;
-	private final AnsiColor peerHitColor;
+	private final AnsiColor unigramHitColor;
+	private final AnsiColor bigramHitColor;
 
-	public EvaluationOutput(AnsiColor modelColor, AnsiColor peerHitColor) {
+	public EvaluationOutput(AnsiColor modelColor, AnsiColor unigramHitColor,
+			AnsiColor bigramHitColor) {
 		super();
 		this.modelColor = modelColor;
-		this.peerHitColor = peerHitColor;
+		this.unigramHitColor = unigramHitColor;
+		this.bigramHitColor = bigramHitColor;
 	}
 
 	public EvaluationOutput() {
-		this(AnsiColor.BLUE, AnsiColor.GREEN);
+		this(AnsiColor.BLUE, AnsiColor.YELLOW, AnsiColor.GREEN);
 	}
 
 	public void log(Task task, Collection<Peer> peers) throws IOException {
-		List<Model> models = task.getModels();
-		Set<String> modelLemmas = new HashSet<>();
+		Set<String> modelUnigrams = new HashSet<>();
+		Set<String> modelBigrams = new HashSet<>();
 
-		for (int modelIndex = 0; modelIndex < models.size(); modelIndex++) {
-			Model model = models.get(modelIndex);
-			String content = model.getContent();
-			modelLemmas.addAll(getLemmas(getLabels(content)));
+		for (Model model : task.getModels()) {
+			String modelContent = model.getContent();
+			Annotation annotation = getAnnotation(modelContent);
 
-			String logString = String.format("MDL %d\t%s", modelIndex, content);
+			modelUnigrams.addAll(CoreNLPUtil.getNGrams(annotation, 1));
+			modelBigrams.addAll(CoreNLPUtil.getNGrams(annotation, 2));
+
+			String logString = String.format("MODEL\t%s", modelContent);
 			LOG.info(modelColor.makeString(logString));
 		}
 
@@ -66,35 +71,54 @@ public class EvaluationOutput {
 			String generatorId = peer.getGeneratorId();
 			String headline = peer.load();
 
-			List<CoreLabel> labels = getLabels(headline);
+			Annotation annotation = getAnnotation(headline);
 			StringBuilder builder = new StringBuilder();
-			for (CoreLabel label : labels) {
-				boolean isHit = modelLemmas.contains(label.lemma());
+			List<CoreLabel> labels = annotation.get(TokensAnnotation.class);
+
+			for (int i = 0; i < labels.size(); i++) {
+				boolean isInModelUnigram = false;
+				boolean isInModelBigram = false;
+
+				CoreLabel label = labels.get(i);
+				String lemma = label.lemma();
+
+				if (modelUnigrams.contains(lemma)) {
+					isInModelUnigram = true;
+
+					if (i > 0
+							&& modelBigrams.contains(labels.get(i - 1).lemma()
+									+ " " + lemma)) {
+						isInModelBigram = true;
+					}
+
+					if (i < labels.size() - 1
+							&& modelBigrams.contains(lemma + " "
+									+ labels.get(i + 1).lemma())) {
+						isInModelBigram = true;
+					}
+				}
+
 				String word = label.word();
 				if (!word.equals("'s")) {
 					builder.append(" ");
 				}
-				if (isHit) {
-					word = peerHitColor.makeString(word);
+				if (isInModelBigram) {
+					word = bigramHitColor.makeString(word);
+				} else if (isInModelUnigram) {
+					word = unigramHitColor.makeString(word);
 				}
+
 				builder.append(word);
+
 			}
 			LOG.info(String.format("%s\t%s", generatorId, builder.toString()));
 		}
 	}
 
-	private List<CoreLabel> getLabels(String content) {
+	private Annotation getAnnotation(String content) {
 		Annotation annotation = new Annotation(content);
 		CoreNLPUtil.ensureLemmaAnnotation(annotation);
-		return annotation.get(TokensAnnotation.class);
-	}
-
-	private Set<String> getLemmas(List<CoreLabel> labels) {
-		Set<String> lemmas = new HashSet<>();
-		for (CoreLabel label : labels) {
-			lemmas.add(label.lemma());
-		}
-		return lemmas;
+		return annotation;
 	}
 
 }
