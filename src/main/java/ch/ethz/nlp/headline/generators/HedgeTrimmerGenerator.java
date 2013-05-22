@@ -1,5 +1,6 @@
 package ch.ethz.nlp.headline.generators;
 
+import ch.ethz.nlp.headline.compressor.AppositivePruner;
 import ch.ethz.nlp.headline.compressor.HedgeTrimmer;
 import ch.ethz.nlp.headline.compressor.PersonNameCompressor;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
@@ -13,6 +14,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	private final SentencesSelector sentencesSelector;
 	private final PersonNameCompressor nameSimplifier;
+	private final AppositivePruner appositivePruner;
 	private final HedgeTrimmer hedgeTrimmer;
 
 	public HedgeTrimmerGenerator(TfIdfProvider tfIdfProvider) {
@@ -21,6 +23,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 		this.sentencesSelector = new TfIdfSentencesSelector(tfIdfProvider);
 		this.nameSimplifier = new PersonNameCompressor();
+		this.appositivePruner = new AppositivePruner();
 		this.hedgeTrimmer = new HedgeTrimmer();
 	}
 
@@ -33,6 +36,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 	protected Annotation generate(Annotation annotation) {
 		annotation = sentencesSelector.select(annotation);
 		annotation = nameSimplifier.compress(annotation);
+		annotation = appositivePruner.compress(annotation);
 		annotation = hedgeTrimmer.compress(annotation);
 
 		return annotation;

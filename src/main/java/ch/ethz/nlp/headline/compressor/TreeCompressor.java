@@ -28,7 +28,7 @@ public abstract class TreeCompressor implements SentencesCompressor {
 
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			Tree oldTree = sentence.get(TreeAnnotation.class);
-			Tree newTree = compress(oldTree);
+			Tree newTree = compress(oldTree, sentence);
 
 			// Rebuild the list of labels from the modified tree
 			List<CoreLabel> coreLabels = new ArrayList<>();
@@ -42,10 +42,18 @@ public abstract class TreeCompressor implements SentencesCompressor {
 		return annotation;
 	}
 
-	protected abstract Tree compress(Tree tree);
+	/**
+	 * The second argument is just there in case the subclass needs more than
+	 * just the tree.
+	 */
+	protected abstract Tree compress(Tree tree, CoreMap sentence);
 
 	protected void logTrimming(Tree trimmedTree, String rule) {
 		String trimmedText = StringUtils.join(trimmedTree.yieldWords(), " ");
+		logTrimming(trimmedText, rule);
+	}
+
+	protected void logTrimming(String trimmedText, String rule) {
 		LOG.debug("Trimming '" + trimmedText + "' [" + rule + "]");
 	}
 

@@ -10,6 +10,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Filter;
 
 public class PersonNameCompressor extends TreeCompressor {
@@ -26,7 +27,7 @@ public class PersonNameCompressor extends TreeCompressor {
 	}
 
 	@Override
-	protected Tree compress(Tree tree) {
+	protected Tree compress(Tree tree, CoreMap sentenc) {
 		final Set<String> namesToRemove = new HashSet<>();
 		List<Label> labels = tree.yield();
 		for (int i = 0; i < labels.size() - 1; i++) {
