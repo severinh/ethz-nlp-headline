@@ -12,9 +12,7 @@ public abstract class SentencesSelector {
 
 	public Annotation select(Annotation annotation) {
 		CoreNLPUtil.ensureSentencesAnnotation(annotation);
-
-		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-		List<CoreMap> selectedSentences = select(sentences);
+		List<CoreMap> selectedSentences = selectImpl(annotation);
 
 		// The text is probably only for debugging convenience
 		// The CharacterOffset*Annotation and Token*Annotation of individual
@@ -26,7 +24,7 @@ public abstract class SentencesSelector {
 		return result;
 	}
 
-	protected abstract List<CoreMap> select(List<CoreMap> sentences);
+	protected abstract List<CoreMap> selectImpl(Annotation annotation);
 
 	private String sentencesToText(List<CoreMap> sentences) {
 		StringBuilder builder = new StringBuilder();
