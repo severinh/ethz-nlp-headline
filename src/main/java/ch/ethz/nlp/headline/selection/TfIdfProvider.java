@@ -17,16 +17,16 @@ import edu.stanford.nlp.util.PriorityQueue;
 
 public class TfIdfProvider {
 
-	private final int numDocs;
+	private final int numDocuments;
 
 	/**
 	 * For each lemma, stores the number of documents in which it occurs.
 	 */
-	private final Map<String, Integer> docFreqs;
+	private final Map<String, Integer> documentFrequencies;
 
 	private TfIdfProvider(int numDocs) {
-		this.docFreqs = new HashMap<>();
-		this.numDocs = numDocs;
+		this.documentFrequencies = new HashMap<>();
+		this.numDocuments = numDocs;
 	}
 
 	public static TfIdfProvider of(Dataset dataset) {
@@ -36,9 +36,8 @@ public class TfIdfProvider {
 			Annotation annotation = new Annotation(document.getContent());
 			Multiset<String> lemmaFreqs = getLemmaFreqs(annotation);
 			for (String lemma : lemmaFreqs.elementSet()) {
-				Integer docFreq = result.docFreqs.get(lemma);
-				docFreq = (docFreq == null) ? 1 : docFreq + 1;
-				result.docFreqs.put(lemma, docFreq);
+				int newFrequency = result.getDocumentFrequency(lemma) + 1;
+				result.documentFrequencies.put(lemma, newFrequency);
 			}
 		}
 
@@ -59,6 +58,15 @@ public class TfIdfProvider {
 		return termFreqs;
 	}
 
+	protected int getNumDocuments() {
+		return numDocuments;
+	}
+
+	protected int getDocumentFrequency(String lemma) {
+		Integer result = documentFrequencies.get(lemma);
+		return (result == null) ? 0 : result;
+	}
+
 	/**
 	 * Compute the tf-idf score for each lemma in the given annotation.
 	 */
@@ -68,10 +76,12 @@ public class TfIdfProvider {
 
 		for (String lemma : lemmaFreqs.elementSet()) {
 			double lemmaFreq = lemmaFreqs.count(lemma);
-			double docFreq = docFreqs.get(lemma);
-			double inverseDocFreq = Math.log(numDocs / docFreq);
-			double tfIdf = lemmaFreq * inverseDocFreq;
-			tfIdfMap.add(lemma, tfIdf);
+			double docFreq = getDocumentFrequency(lemma);
+			if (docFreq > 0) {
+				double inverseDocFreq = Math.log(getNumDocuments() / docFreq);
+				double tfIdf = lemmaFreq * inverseDocFreq;
+				tfIdfMap.add(lemma, tfIdf);
+			}
 		}
 
 		return tfIdfMap;

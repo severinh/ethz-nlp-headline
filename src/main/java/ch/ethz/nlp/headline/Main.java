@@ -14,6 +14,7 @@ import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
+import ch.ethz.nlp.headline.selection.TfIdfProvider;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -28,12 +29,12 @@ public class Main {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
+		TfIdfProvider tfIdfProvider = TfIdfProvider.of(dataset);
 		List<CoreNLPGenerator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator());
 		// generators.add(new PosFilteredGenerator());
-		// TfIdfProvider tfIdfProvider = TfIdfProvider.of(dataset);
 		// generators.add(new CombinedSentenceGenerator(tfIdfProvider));
-		generators.add(new HedgeTrimmerGenerator());
+		generators.add(new HedgeTrimmerGenerator(tfIdfProvider));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		EvaluationOutput evaluationOutput = new EvaluationOutput();

@@ -12,7 +12,7 @@ mkdir -p $DUC_PEERS_DIR # create if it doesn't exist
 mkdir -p $EVAL_OUTPUT_DIR
 
 rm -f $EVAL_CONFIG
-find $DUC_PEERS_DIR -type f | xargs rm
+find $DUC_PEERS_DIR -type f | xargs rm -f
 
 start_time=`date +%s`
 mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.Main"

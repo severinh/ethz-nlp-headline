@@ -15,7 +15,7 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 
 	private final TfIdfProvider tfIdfProvider;
 
-	private static final int NUM_SENTENCES = 3;
+	private static final int NUM_SENTENCES = 1;
 	private static final int MIN_LENGTH = 10;
 	private static final int POS_THRESHOLD = 1;
 
@@ -37,7 +37,7 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 
 		for (int i = 0; i < sentences.size(); i++) {
 			CoreMap sentence = sentences.get(i);
-			SentenceScores scores = new SentenceScores(sentence);
+			SentenceScores scores = new SentenceScores(sentence, i);
 
 			// tf-idf
 			double sentenceTfIdfScore = 0.0;
@@ -78,6 +78,7 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 	public class SentenceScores implements Comparable<SentenceScores> {
 
 		private final CoreMap sentence;
+		private final int position;
 
 		private double tfIdfScore;
 		private double positionScore;
@@ -111,8 +112,13 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 			return sentence;
 		}
 
-		public SentenceScores(CoreMap sentence) {
+		public int getPosition() {
+			return position;
+		}
+
+		public SentenceScores(CoreMap sentence, int position) {
 			this.sentence = sentence;
+			this.position = position;
 		}
 
 		public double getCombinedScore() {
