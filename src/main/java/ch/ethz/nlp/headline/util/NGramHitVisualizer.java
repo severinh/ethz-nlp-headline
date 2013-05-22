@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
+import edu.stanford.nlp.ling.CoreAnnotations.BeforeAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -82,16 +83,15 @@ public class NGramHitVisualizer {
 				}
 			}
 
-			if (i != 0 && !word.equals("'s")) {
-				builder.append(" ");
-			}
-
 			if (isInModelBigram) {
 				word = BIGRAM_HIT_COLOR.makeString(word);
 			} else if (isInModelUnigram) {
 				word = UNIGRAM_HIT_COLOR.makeString(word);
 			}
 
+			String before = label.get(BeforeAnnotation.class);
+			before = before.replaceAll("\n", "");
+			builder.append(before);
 			builder.append(word);
 		}
 
