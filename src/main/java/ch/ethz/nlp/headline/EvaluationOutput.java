@@ -72,7 +72,7 @@ public class EvaluationOutput {
 			modelUnigrams.addAll(CoreNLPUtil.getNGrams(annotation, 1));
 			modelBigrams.addAll(CoreNLPUtil.getNGrams(annotation, 2));
 
-			String logString = String.format("MODEL\t\t\t%s", modelContent);
+			String logString = String.format("MODEL\t\t%s", modelContent);
 			LOG.info(modelColor.makeString(logString));
 		}
 
@@ -123,8 +123,10 @@ public class EvaluationOutput {
 
 			double rouge1Recall = rouge1.compute(modelAnnotations, annotation);
 			double rouge2Recall = rouge2.compute(modelAnnotations, annotation);
-			String rouge1String = String.format("%.2f", rouge1Recall);
-			String rouge2String = String.format("%.2f", rouge2Recall);
+			String rouge1String = String.format("%.2f", rouge1Recall)
+					.substring(1);
+			String rouge2String = String.format("%.2f", rouge2Recall)
+					.substring(1);
 
 			if (!generatorId.equals("BASE")) {
 				if (rouge1Recall < ROUGE_1_THRESHOLD) {
@@ -136,7 +138,7 @@ public class EvaluationOutput {
 				}
 			}
 
-			LOG.info(String.format("%s\t%s\t%s\t%s", generatorId, rouge1String,
+			LOG.info(String.format("%s\t%s %s\t%s", generatorId, rouge1String,
 					rouge2String, builder.toString()));
 		}
 	}
