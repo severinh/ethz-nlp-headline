@@ -59,8 +59,10 @@ public class NGramHitVisualizer {
 
 			CoreLabel label = labels.get(i);
 			String lemma = label.lemma();
+			String word = label.word();
 
-			if (modelUnigrams.contains(lemma)) {
+			if (modelUnigrams.contains(lemma)
+					&& !CoreNLPUtil.isPunctuation(word)) {
 				isInModelUnigram = true;
 
 				if (i > 0) {
@@ -80,7 +82,6 @@ public class NGramHitVisualizer {
 				}
 			}
 
-			String word = label.word();
 			if (i != 0 && !word.equals("'s")) {
 				builder.append(" ");
 			}
