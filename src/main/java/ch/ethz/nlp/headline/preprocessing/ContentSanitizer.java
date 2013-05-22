@@ -7,10 +7,10 @@ public class ContentSanitizer implements ContentPreprocessor {
 		// Drop prefixes such as: BRUSSELS, Belgium (AP) -
 		content = content.replaceAll("\\w+, \\w+ \\(AP\\) . ", "");
 
-		// Replace newlines
-		content = content.replaceAll("\\n", " ");
+		// Normalize Q & A article with formatting
+		content = content.replaceAll("Q. \\(italics\\)", "");
+		content = content.replaceAll("\\(end italics\\) A.", "");
 
 		return content;
 	}
-
 }
