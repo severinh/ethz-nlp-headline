@@ -73,7 +73,7 @@ public class HedgeTrimmer extends TreeCompressor {
 			private static final long serialVersionUID = 1L;
 
 			private Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a", "the",
-					"have", "be", "its");
+					"have", "be", "its", "here");
 
 			@Override
 			public boolean accept(Tree tree) {
