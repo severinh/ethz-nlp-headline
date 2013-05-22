@@ -1,0 +1,3 @@
+# If this property is set to a value such as 'd31008t/NYT19981016.0233'
+# only the document with this particular ID will be processed
+filter_document_id=

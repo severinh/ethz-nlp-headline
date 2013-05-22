@@ -17,6 +17,9 @@ import edu.stanford.nlp.util.Filter;
 
 public class HedgeTrimmer extends TreeCompressor {
 
+	private static final Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a",
+			"the", "have", "be", "its", "here");
+
 	@Override
 	public Tree compress(Tree tree) {
 		tree = getLowestLeftmostSWithNPVP(tree);
@@ -71,9 +74,6 @@ public class HedgeTrimmer extends TreeCompressor {
 		tree = tree.prune(new Filter<Tree>() {
 
 			private static final long serialVersionUID = 1L;
-
-			private Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a", "the",
-					"have", "be", "its", "here");
 
 			@Override
 			public boolean accept(Tree tree) {

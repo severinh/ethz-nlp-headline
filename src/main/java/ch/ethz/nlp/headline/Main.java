@@ -26,6 +26,7 @@ public class Main {
 
 	public static void main(String[] args) throws ClassNotFoundException,
 			IOException {
+		Config config = new Config();
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
@@ -42,9 +43,15 @@ public class Main {
 		for (int i = 0; i < tasks.size(); i++) {
 			Task task = tasks.get(i);
 			Document document = task.getDocument();
+			String documentId = document.getId().toString();
+
+			if (config.getFilterDocumentId().isPresent()
+					&& !documentId.equals(config.getFilterDocumentId().get())) {
+				continue;
+			}
 
 			LOG.info(String.format("Processing task %d of %d: %s", i + 1,
-					tasks.size(), document.getId()));
+					tasks.size(), documentId));
 
 			for (Generator generator : generators) {
 				String content = document.getContent();
@@ -66,9 +73,10 @@ public class Main {
 			LOG.info(generator.getStatistics().toString());
 		}
 
-		EvaluationConfig config = new EvaluationConfig(dataset);
+		EvaluationConfig evaluationConfig = new EvaluationConfig(dataset);
 		Path configPath = FileSystems.getDefault().getPath(
 				EVALUATION_CONFIG_FILENAME);
-		config.write(configPath, peersMap);
+		evaluationConfig.write(configPath, peersMap);
 	}
+
 }
