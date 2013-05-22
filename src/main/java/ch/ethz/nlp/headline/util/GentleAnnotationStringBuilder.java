@@ -1,7 +1,7 @@
 package ch.ethz.nlp.headline.util;
 
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.CoreAnnotations.BeforeAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.AfterAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -24,8 +24,8 @@ public class GentleAnnotationStringBuilder implements AnnotationStringBuilder {
 				if (builder.length() + word.length() > maxLength) {
 					break;
 				}
-				builder.append(label.get(BeforeAnnotation.class));
 				builder.append(word);
+				builder.append(label.get(AfterAnnotation.class));
 			}
 		}
 

@@ -9,10 +9,12 @@ import com.google.common.collect.ImmutableList;
 
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
-import edu.stanford.nlp.ling.CoreAnnotations.BeforeAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.AfterAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.util.CoreMap;
 
 public class NGramHitVisualizer {
 
@@ -52,47 +54,52 @@ public class NGramHitVisualizer {
 		CoreNLPUtil.ensureLemmaAnnotation(candidate);
 
 		StringBuilder builder = new StringBuilder();
-		List<CoreLabel> labels = candidate.get(TokensAnnotation.class);
 
-		for (int i = 0; i < labels.size(); i++) {
-			boolean isInModelUnigram = false;
-			boolean isInModelBigram = false;
+		for (CoreMap sentence : candidate.get(SentencesAnnotation.class)) {
+			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
 
-			CoreLabel label = labels.get(i);
-			String lemma = label.lemma();
-			String word = label.word();
+			for (int i = 0; i < labels.size(); i++) {
+				boolean isInModelUnigram = false;
+				boolean isInModelBigram = false;
 
-			if (modelUnigrams.contains(lemma)
-					&& !CoreNLPUtil.isPunctuation(word)) {
-				isInModelUnigram = true;
+				CoreLabel label = labels.get(i);
+				String lemma = label.lemma();
+				String word = label.word();
 
-				if (i > 0) {
-					String precedingLemma = labels.get(i - 1).lemma();
-					String bigram = precedingLemma + " " + lemma;
-					if (modelBigrams.contains(bigram)) {
-						isInModelBigram = true;
+				if (modelUnigrams.contains(lemma)
+						&& !CoreNLPUtil.isPunctuation(word)) {
+					isInModelUnigram = true;
+
+					if (i > 0) {
+						String precedingLemma = labels.get(i - 1).lemma();
+						String bigram = precedingLemma + " " + lemma;
+						if (modelBigrams.contains(bigram)) {
+							isInModelBigram = true;
+						}
+					}
+
+					if (i < labels.size() - 1) {
+						String nextLemma = labels.get(i + 1).lemma();
+						String bigram = lemma + " " + nextLemma;
+						if (modelBigrams.contains(bigram)) {
+							isInModelBigram = true;
+						}
 					}
 				}
 
-				if (i < labels.size() - 1) {
-					String nextLemma = labels.get(i + 1).lemma();
-					String bigram = lemma + " " + nextLemma;
-					if (modelBigrams.contains(bigram)) {
-						isInModelBigram = true;
-					}
+				if (isInModelBigram) {
+					word = BIGRAM_HIT_COLOR.makeString(word);
+				} else if (isInModelUnigram) {
+					word = UNIGRAM_HIT_COLOR.makeString(word);
 				}
+
+				String after = label.get(AfterAnnotation.class);
+				after = after.replaceAll("\n", "");
+				builder.append(word);
+				builder.append(after);
 			}
 
-			if (isInModelBigram) {
-				word = BIGRAM_HIT_COLOR.makeString(word);
-			} else if (isInModelUnigram) {
-				word = UNIGRAM_HIT_COLOR.makeString(word);
-			}
-
-			String before = label.get(BeforeAnnotation.class);
-			before = before.replaceAll("\n", "");
-			builder.append(before);
-			builder.append(word);
+			builder.append("\n");
 		}
 
 		return builder.toString();

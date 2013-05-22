@@ -41,6 +41,7 @@ public class EvaluationOutput {
 
 			Annotation annotation = getAnnotation(headline);
 			String visualization = visualizer.visualize(annotation);
+			visualization = visualization.replaceAll("\n", "");
 
 			double rouge1Recall = rouge1.compute(modelAnnotations, annotation);
 			double rouge2Recall = rouge2.compute(modelAnnotations, annotation);

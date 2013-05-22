@@ -2,7 +2,6 @@ package ch.ethz.nlp.headline.util;
 
 import java.util.List;
 
-import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +19,8 @@ public class DocumentInspector {
 	public void inspectDocumentInTask(Task task) {
 		NGramHitVisualizer visualizer = NGramHitVisualizer.of(task.getModels());
 		String result = visualizer.visualize(task.getDocument());
-		result = WordUtils.wrap(result, 80);
-		String documentId = task.getDocument().getId().toString();
-		LOG.info(String
-				.format("Inspecting document %s\n%s", documentId, result));
+		String id = task.getDocument().getId().toString();
+		LOG.info(String.format("Inspecting document %s\n%s", id, result));
 	}
 
 	public static void main(String[] args) {
