@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
+import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.Filter;
 import edu.stanford.nlp.util.Pair;
@@ -45,6 +46,14 @@ public class BlacklistTreeFilter implements Filter<Tree> {
 
 	public List<Tree> getPrunedTrees() {
 		return Collections.unmodifiableList(prunedTrees);
+	}
+
+	public List<Word> getPrunedWords() {
+		List<Word> words = new ArrayList<>();
+		for (Tree tree : getPrunedTrees()) {
+			words.addAll(tree.yieldWords());
+		}
+		return words;
 	}
 
 	@Override

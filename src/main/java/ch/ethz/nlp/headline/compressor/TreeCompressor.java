@@ -11,6 +11,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -49,11 +50,11 @@ public abstract class TreeCompressor implements SentencesCompressor {
 	protected abstract Tree compress(Tree tree, CoreMap sentence);
 
 	protected void logTrimming(Tree trimmedTree, String rule) {
-		String trimmedText = StringUtils.join(trimmedTree.yieldWords(), " ");
-		logTrimming(trimmedText, rule);
+		logTrimming(trimmedTree.yieldWords(), rule);
 	}
 
-	protected void logTrimming(String trimmedText, String rule) {
+	protected void logTrimming(List<Word> trimmedWords, String rule) {
+		String trimmedText = StringUtils.join(trimmedWords, " ");
 		LOG.debug("Trimming '" + trimmedText + "' [" + rule + "]");
 	}
 
