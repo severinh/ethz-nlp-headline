@@ -7,50 +7,29 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
-
 import com.google.common.collect.ImmutableSet;
 
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
-import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
-import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
-import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Filter;
-import edu.stanford.nlp.util.StringUtils;
 
-public class HedgeTrimmer implements SentencesCompressor {
-
-	private static final Logger LOG = LoggerFactory
-			.getLogger(HedgeTrimmer.class);
+public class HedgeTrimmer extends TreeCompressor {
 
 	@Override
-	public Annotation compress(Annotation annotation) {
-		CoreNLPUtil.ensureTreeAnnotation(annotation);
-
-		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
-			Tree tree = sentence.get(TreeAnnotation.class);
-
-			Tree sTree = getLowestLeftmostSWithNPVP(tree);
-			if (sTree == null) {
-				// Account for cases where the first sentence is only a fragment
-				sTree = tree;
-			}
-
-			sTree = removeLowContentNodes(sTree);
-			sTree = shortenIterativelyRule1(sTree);
-			sTree = shortenIterativelyRule2(sTree);
-
-			sentence.set(TreeAnnotation.class, sTree);
+	public Tree compress(Tree tree) {
+		Tree newTree = getLowestLeftmostSWithNPVP(tree);
+		if (newTree == null) {
+			// Account for cases where the first sentence is only a fragment
+			newTree = tree;
 		}
 
-		return annotation;
+		newTree = removeLowContentNodes(newTree);
+		newTree = shortenIterativelyRule1(newTree);
+		newTree = shortenIterativelyRule2(newTree);
+
+		return newTree;
 	}
 
 	private Tree getLowestLeftmostSWithNPVP(Tree tree) {
@@ -80,6 +59,7 @@ public class HedgeTrimmer implements SentencesCompressor {
 				result = childResult;
 			}
 		}
+
 		return result;
 	}
 
@@ -208,11 +188,6 @@ public class HedgeTrimmer implements SentencesCompressor {
 			}
 		}
 		return tree;
-	}
-
-	private void logTrimming(Tree trimmedTree, String rule) {
-		String trimmedText = StringUtils.join(trimmedTree.yieldWords(), " ");
-		LOG.debug("Trimming '" + trimmedText + "' [" + rule + "]");
 	}
 
 }

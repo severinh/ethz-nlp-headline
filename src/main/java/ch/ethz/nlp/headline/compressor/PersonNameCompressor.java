@@ -4,43 +4,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
-import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
-import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Filter;
-import edu.stanford.nlp.util.StringUtils;
 
-public class PersonNameSimplifier implements SentencesCompressor {
-
-	private static final Logger LOG = LoggerFactory
-			.getLogger(PersonNameSimplifier.class);
+public class PersonNameCompressor extends TreeCompressor {
 
 	@Override
 	public Annotation compress(Annotation annotation) {
 		CoreNLPUtil.ensureNamedEntityTagAnnotation(annotation);
-		CoreNLPUtil.ensureTreeAnnotation(annotation);
 
-		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
-			Tree tree = sentence.get(TreeAnnotation.class);
-			sentence.set(TreeAnnotation.class, compress(tree));
-		}
-
-		return annotation;
+		return super.compress(annotation);
 	}
 
 	private boolean isPerson(CoreLabel label) {
 		return label.ner() != null && label.ner().equals("PERSON");
 	}
 
-	private Tree compress(Tree tree) {
+	@Override
+	protected Tree compress(Tree tree) {
 		final Set<String> namesToRemove = new HashSet<>();
 		List<Label> labels = tree.yield();
 		for (int i = 0; i < labels.size() - 1; i++) {
@@ -69,11 +54,6 @@ public class PersonNameSimplifier implements SentencesCompressor {
 		});
 
 		return tree;
-	}
-
-	private void logTrimming(Tree trimmedTree, String rule) {
-		String trimmedText = StringUtils.join(trimmedTree.yieldWords(), " ");
-		LOG.debug("Trimming '" + trimmedText + "' [" + rule + "]");
 	}
 
 }

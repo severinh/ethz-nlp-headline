@@ -1,7 +1,7 @@
 package ch.ethz.nlp.headline.generators;
 
 import ch.ethz.nlp.headline.compressor.HedgeTrimmer;
-import ch.ethz.nlp.headline.compressor.PersonNameSimplifier;
+import ch.ethz.nlp.headline.compressor.PersonNameCompressor;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
 import ch.ethz.nlp.headline.selection.FirstSentenceSelector;
@@ -18,7 +18,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	private final ContentPreprocessor preprocessor = CombinedPreprocessor.all();
 	private final SentencesSelector sentencesSelector = new FirstSentenceSelector();
-	private final PersonNameSimplifier nameSimplifier = new PersonNameSimplifier();
+	private final PersonNameCompressor nameSimplifier = new PersonNameCompressor();
 	private final HedgeTrimmer hedgeTrimmer = new HedgeTrimmer();
 
 	@Override
