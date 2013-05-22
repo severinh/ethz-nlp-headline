@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
+import ch.ethz.nlp.headline.EvaluationOutput.AnsiColor;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
@@ -48,37 +49,40 @@ public class AppositivePruner extends TreeCompressor {
 			}
 		}
 
-		final List<String> prunedWords = new ArrayList<>();
+		if (!appositiveWords.isEmpty()) {
+			final List<String> prunedWords = new ArrayList<>();
 
-		tree = tree.prune(new Filter<Tree>() {
+			tree = tree.prune(new Filter<Tree>() {
 
-			private static final long serialVersionUID = 1L;
+				private static final long serialVersionUID = 1L;
 
-			@Override
-			public boolean accept(Tree tree) {
-				CoreLabel label = (CoreLabel) tree.label();
-				if (label != null && label.word() != null) {
-					for (IndexedWord appositiveLabel : appositiveWords) {
-						if (Objects.equals(
-								label.get(BeginIndexAnnotation.class),
-								appositiveLabel.get(BeginIndexAnnotation.class))
-								&& Objects.equals(label
-										.get(EndIndexAnnotation.class),
-										appositiveLabel
-												.get(EndIndexAnnotation.class))) {
-							prunedWords.add(label.word());
-							return false;
+				@Override
+				public boolean accept(Tree tree) {
+					CoreLabel label = (CoreLabel) tree.label();
+					if (label != null && label.word() != null) {
+						for (IndexedWord appositiveLabel : appositiveWords) {
+							if (Objects.equals(label
+									.get(BeginIndexAnnotation.class),
+									appositiveLabel
+											.get(BeginIndexAnnotation.class))
+									&& Objects.equals(
+											label.get(EndIndexAnnotation.class),
+											appositiveLabel
+													.get(EndIndexAnnotation.class))) {
+								prunedWords.add(label.word());
+								return false;
+							}
 						}
+
 					}
-
+					return true;
 				}
-				return true;
-			}
 
-		});
+			});
 
-		String trimmedText = StringUtils.join(prunedWords, " ");
-		logTrimming(trimmedText, "Appositive");
+			String trimmedText = StringUtils.join(prunedWords, " ");
+			logTrimming(trimmedText, AnsiColor.PURPLE.makeString("Appositive"));
+		}
 
 		return tree;
 	}
