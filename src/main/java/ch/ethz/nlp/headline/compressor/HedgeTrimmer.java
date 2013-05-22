@@ -19,20 +19,24 @@ public class HedgeTrimmer extends TreeCompressor {
 
 	@Override
 	public Tree compress(Tree tree) {
-		Tree newTree = getLowestLeftmostSWithNPVP(tree);
+		tree = getLowestLeftmostSWithNPVP(tree);
+		tree = removeLowContentNodes(tree);
+		tree = shortenIterativelyRule1(tree);
+		tree = shortenIterativelyRule2(tree);
+
+		return tree;
+	}
+
+	private Tree getLowestLeftmostSWithNPVP(Tree tree) {
+		Tree newTree = getLowestLeftmostSWithNPVPImpl(tree);
 		if (newTree == null) {
 			// Account for cases where the first sentence is only a fragment
 			newTree = tree;
 		}
-
-		newTree = removeLowContentNodes(newTree);
-		newTree = shortenIterativelyRule1(newTree);
-		newTree = shortenIterativelyRule2(newTree);
-
 		return newTree;
 	}
 
-	private Tree getLowestLeftmostSWithNPVP(Tree tree) {
+	private Tree getLowestLeftmostSWithNPVPImpl(Tree tree) {
 		Tree result = null;
 		if (tree.value().equals("S")) {
 			boolean hasNPChild = false;
@@ -54,7 +58,7 @@ public class HedgeTrimmer extends TreeCompressor {
 		// Only consider the left-most child
 		Tree firstChild = tree.firstChild();
 		if (firstChild != null) {
-			Tree childResult = getLowestLeftmostSWithNPVP(firstChild);
+			Tree childResult = getLowestLeftmostSWithNPVPImpl(firstChild);
 			if (childResult != null) {
 				result = childResult;
 			}
