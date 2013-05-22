@@ -23,7 +23,8 @@ public class HedgeTrimmer extends TreeCompressor {
 	public Tree compress(Tree tree, CoreMap sentence) {
 		tree = getLowestLeftmostSWithNPVP(tree);
 		tree = removeLowContentNodes(tree);
-		tree = shortenIterativelyRule1(tree);
+		// TODO: Currently not used because it makes the performance worse
+		// tree = shortenIterativelyRule1(tree);
 		tree = shortenIterativelyRule2(tree);
 
 		return tree;
@@ -137,6 +138,7 @@ public class HedgeTrimmer extends TreeCompressor {
 		return tree;
 	}
 
+	@SuppressWarnings("unused")
 	private Tree shortenIterativelyRule1(Tree fullTree) {
 		List<CoreLabel> candidates = new ArrayList<>();
 		Set<String> XP = ImmutableSet.of("NP", "VP", "S");
