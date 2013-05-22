@@ -1,6 +1,8 @@
 package ch.ethz.nlp.headline.compressor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
@@ -17,31 +19,10 @@ public class AppositivePruner extends TreeCompressor {
 	@Override
 	protected Tree compress(Tree tree, CoreMap sentence) {
 		SemanticGraph graph = sentence.get(BasicDependenciesAnnotation.class);
-		Set<IndexedWord> appositiveWords = new HashSet<>();
 
-		for (IndexedWord word : graph.vertexSet()) {
-			Set<GrammaticalRelation> relations = graph.relns(word);
-			for (GrammaticalRelation relation : relations) {
-				if (Objects.equals(relation.getShortName(), "appos")) {
-					Stack<IndexedWord> stack = new Stack<>();
-					stack.add(word);
-					while (!stack.isEmpty()) {
-						IndexedWord appositiveWord = stack.pop();
-						appositiveWords.add(appositiveWord);
-						for (IndexedWord child : graph
-								.getChildren(appositiveWord)) {
-							if (!appositiveWords.contains(child)) {
-								stack.add(child);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if (!appositiveWords.isEmpty()) {
-			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(
-					appositiveWords);
+		for (IndexedWord root : getAppositiveRoots(graph)) {
+			Set<IndexedWord> blacklist = getChildrenRecursively(graph, root);
+			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(blacklist);
 
 			tree = tree.prune(treeFilter);
 			logTrimming(treeFilter.getPrunedWords(), "Appositive");
@@ -50,4 +31,35 @@ public class AppositivePruner extends TreeCompressor {
 		return tree;
 	}
 
+	private List<IndexedWord> getAppositiveRoots(SemanticGraph graph) {
+		List<IndexedWord> appositiveRoots = new ArrayList<>();
+		for (IndexedWord word : graph.vertexSet()) {
+			Set<GrammaticalRelation> relations = graph.relns(word);
+			for (GrammaticalRelation relation : relations) {
+				if (Objects.equals(relation.getShortName(), "appos")) {
+					appositiveRoots.add(word);
+				}
+			}
+		}
+		return appositiveRoots;
+	}
+
+	private Set<IndexedWord> getChildrenRecursively(SemanticGraph graph,
+			IndexedWord root) {
+		Set<IndexedWord> result = new HashSet<>();
+
+		Stack<IndexedWord> stack = new Stack<>();
+		stack.add(root);
+		while (!stack.isEmpty()) {
+			IndexedWord word = stack.pop();
+			result.add(word);
+			for (IndexedWord child : graph.getChildren(word)) {
+				if (!result.contains(child)) {
+					stack.add(child);
+				}
+			}
+		}
+
+		return result;
+	}
 }
