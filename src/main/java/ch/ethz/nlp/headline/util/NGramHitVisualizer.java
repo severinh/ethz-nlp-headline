@@ -63,16 +63,20 @@ public class NGramHitVisualizer {
 			if (modelUnigrams.contains(lemma)) {
 				isInModelUnigram = true;
 
-				if (i > 0
-						&& modelBigrams.contains(labels.get(i - 1).lemma()
-								+ " " + lemma)) {
-					isInModelBigram = true;
+				if (i > 0) {
+					String precedingLemma = labels.get(i - 1).lemma();
+					String bigram = precedingLemma + " " + lemma;
+					if (modelBigrams.contains(bigram)) {
+						isInModelBigram = true;
+					}
 				}
 
-				if (i < labels.size() - 1
-						&& modelBigrams.contains(lemma + " "
-								+ labels.get(i + 1).lemma())) {
-					isInModelBigram = true;
+				if (i < labels.size() - 1) {
+					String nextLemma = labels.get(i + 1).lemma();
+					String bigram = lemma + " " + nextLemma;
+					if (modelBigrams.contains(bigram)) {
+						isInModelBigram = true;
+					}
 				}
 			}
 
