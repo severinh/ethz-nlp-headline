@@ -8,6 +8,7 @@ import java.util.Set;
 
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -28,7 +29,6 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 		// Temporarily create a tagger to gain access to the list of open tags
 		MaxentTagger tagger = new MaxentTagger(MaxentTagger.DEFAULT_JAR_PATH);
 		openTags = tagger.getTags().getOpenTags();
-
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 		List<CoreMap> singletonList = new LinkedList<>();
 		singletonList.add(firstSentenceMap);
 		singleSentenceAnnotation.set(SentencesAnnotation.class, singletonList);
-		getPosTagger().annotate(singleSentenceAnnotation);
+		CoreNLPUtil.getPosTagger().annotate(singleSentenceAnnotation);
 		
 		List<CoreLabel> labels = firstSentenceMap.get(TokensAnnotation.class);
 		List<String> wordsWithOpenTag = new ArrayList<>();

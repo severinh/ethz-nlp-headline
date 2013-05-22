@@ -28,7 +28,7 @@ public class Duc2004Document implements Document {
 		String html = new String(Files.readAllBytes(getPath()));
 		Matcher matcher = TEXT_PATTERN.matcher(html);
 		if (matcher.find()) {
-			content = matcher.group(1).trim();
+			content = matcher.group(1).trim().replace("\\n", " ");
 		} else {
 			throw new IOException("could not parse document");
 		}

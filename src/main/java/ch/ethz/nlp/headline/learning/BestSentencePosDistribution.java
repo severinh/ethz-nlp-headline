@@ -12,7 +12,7 @@ import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
-import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -98,10 +98,10 @@ public class BestSentencePosDistribution {
 
 	private Annotation getAnnotation(String content) {
 		Annotation annotation = new Annotation(content);
-		CoreNLPGenerator.getTokenizer().annotate(annotation);
-		CoreNLPGenerator.getSentenceSplitter().annotate(annotation);
-		CoreNLPGenerator.getPosTagger().annotate(annotation);
-		CoreNLPGenerator.getLemmatizer().annotate(annotation);
+		CoreNLPUtil.getTokenizer().annotate(annotation);
+		CoreNLPUtil.getSentenceSplitter().annotate(annotation);
+		CoreNLPUtil.getPosTagger().annotate(annotation);
+		CoreNLPUtil.getLemmatizer().annotate(annotation);
 		return annotation;
 	}
 

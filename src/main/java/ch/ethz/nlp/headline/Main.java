@@ -29,8 +29,7 @@ public class Main {
 		List<Task> tasks = dataset.getTasks();
 
 		List<CoreNLPGenerator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator(dataset));
-		// generators.add(new SanitizingGenerator());
+		generators.add(new BaselineGenerator());
 		// generators.add(new PosFilteredGenerator(dataset));
 		// generators.add(new TfIdfWordsGenerator(dataset));
 		// generators.add(new CombinedSentenceGenerator(dataset));

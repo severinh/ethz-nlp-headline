@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.DocumentId;
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -107,7 +108,7 @@ public class CombinedSentenceGenerator extends TfIdfGenerator {
 			singletonList.add(currentSentence);
 			singleSentenceAnnotation.set(SentencesAnnotation.class,
 					singletonList);
-			getPosTagger().annotate(singleSentenceAnnotation);
+			CoreNLPUtil.getPosTagger().annotate(singleSentenceAnnotation);
 			List<CoreLabel> labels = currentSentence
 					.get(TokensAnnotation.class);
 			for (CoreLabel label : labels) {

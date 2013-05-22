@@ -9,7 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -85,10 +85,10 @@ public class EvaluationOutput {
 
 	private List<CoreLabel> getLabels(String content) {
 		Annotation annotation = new Annotation(content);
-		CoreNLPGenerator.getTokenizer().annotate(annotation);
-		CoreNLPGenerator.getSentenceSplitter().annotate(annotation);
-		CoreNLPGenerator.getPosTagger().annotate(annotation);
-		CoreNLPGenerator.getLemmatizer().annotate(annotation);
+		CoreNLPUtil.getTokenizer().annotate(annotation);
+		CoreNLPUtil.getSentenceSplitter().annotate(annotation);
+		CoreNLPUtil.getPosTagger().annotate(annotation);
+		CoreNLPUtil.getLemmatizer().annotate(annotation);
 
 		return annotation.get(TokensAnnotation.class);
 	}

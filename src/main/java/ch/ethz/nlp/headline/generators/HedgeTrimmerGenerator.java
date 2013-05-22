@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -56,17 +57,17 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		content = content.replaceAll("Corp.", "");
 
 		Annotation annotation = new Annotation(content);
-		getTokenizer().annotate(annotation);
-		getSentenceSplitter().annotate(annotation);
+		CoreNLPUtil.getTokenizer().annotate(annotation);
+		CoreNLPUtil.getSentenceSplitter().annotate(annotation);
 
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
 		CoreMap firstSentence = sentences.get(0);
 		Annotation sentenceAnnotation = makeAnnotationFromSentence(firstSentence);
 
-		getPosTagger().annotate(sentenceAnnotation);
-		getLemmatizer().annotate(sentenceAnnotation);
-		getNER().annotate(sentenceAnnotation);
-		getParser().annotate(sentenceAnnotation);
+		CoreNLPUtil.getPosTagger().annotate(sentenceAnnotation);
+		CoreNLPUtil.getLemmatizer().annotate(sentenceAnnotation);
+		CoreNLPUtil.getNER().annotate(sentenceAnnotation);
+		CoreNLPUtil.getParser().annotate(sentenceAnnotation);
 
 		Tree tree = firstSentence.get(TreeAnnotation.class);
 
@@ -123,7 +124,6 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	private boolean isPerson(CoreLabel label) {
 		return label.ner() != null && label.ner().equals("PERSON");
-
 	}
 
 	private Tree simplifyPersonNames(Tree tree) {
