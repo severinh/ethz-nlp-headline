@@ -1,49 +1,46 @@
 package ch.ethz.nlp.headline.generators;
 
-import java.util.ArrayList;
-import java.util.List;
+import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
+import ch.ethz.nlp.headline.preprocessing.NopPreprocessor;
+import ch.ethz.nlp.headline.util.AnnotationStringBuilder;
+import ch.ethz.nlp.headline.util.SimpleAnnotationStringBuilder;
+import edu.stanford.nlp.pipeline.Annotation;
 
 public abstract class CoreNLPGenerator implements Generator {
 
-	private GeneratorStatistics statistics = new GeneratorStatistics();
+	private final ContentPreprocessor preprocessor;
+	private final AnnotationStringBuilder resultBuilder;
+
+	public CoreNLPGenerator(ContentPreprocessor preprocessor,
+			AnnotationStringBuilder resultBuilder) {
+		this.preprocessor = preprocessor;
+		this.resultBuilder = resultBuilder;
+	}
+
+	public CoreNLPGenerator() {
+		this(NopPreprocessor.INSTANCE, SimpleAnnotationStringBuilder.INSTANCE);
+	}
+
+	@Override
+	public String generate(String content) {
+		content = preprocessor.preprocess(content);
+
+		Annotation annotation = new Annotation(content);
+		annotation = generate(annotation);
+
+		String result = resultBuilder.build(annotation, Integer.MAX_VALUE);
+		String trimmedResult = resultBuilder.build(annotation, MAX_LENGTH);
+
+		getStatistics().addSummaryResult(result);
+		return trimmedResult;
+	}
+
+	protected abstract Annotation generate(Annotation annotation);
+
+	private GeneratorStatistics statistics = new GeneratorStatistics(this);
 
 	public GeneratorStatistics getStatistics() {
 		return statistics;
-	}
-
-	protected String truncate(String headline) {
-		if (headline.length() > MAX_LENGTH) {
-			headline = headline.substring(0, MAX_LENGTH);
-		}
-		return headline;
-	}
-
-	public class GeneratorStatistics {
-		private List<Integer> summaryLengths = new ArrayList<>();
-
-		public void addSummaryResult(String summary) {
-			summaryLengths.add(summary.length());
-		}
-
-		@Override
-		public String toString() {
-			int summaries = summaryLengths.size();
-			int tooLong = 0;
-			double totalLength = 0;
-			for (Integer i : summaryLengths) {
-				if (i > MAX_LENGTH) {
-					tooLong++;
-				}
-				totalLength += i;
-			}
-			double avgLength = totalLength / summaries;
-
-			StringBuilder sb = new StringBuilder();
-			sb.append(getId() + " statistics:\n");
-			sb.append(String.format("Too long: %d/%d\n", tooLong, summaries));
-			sb.append(String.format("Average length: %.2f\n", avgLength));
-			return sb.toString();
-		}
 	}
 
 }

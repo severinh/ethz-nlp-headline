@@ -17,14 +17,8 @@ public class BaselineGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(String content) {
-		Annotation annotation = new Annotation(content);
-		Annotation selectedAnnotation = sentencesSelector.select(annotation);
-
-		String result = selectedAnnotation.toString();
-		getStatistics().addSummaryResult(result);
-
-		return truncate(result);
+	protected Annotation generate(Annotation annotation) {
+		return sentencesSelector.select(annotation);
 	}
 
 }

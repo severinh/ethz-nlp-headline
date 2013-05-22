@@ -7,12 +7,10 @@ import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.NamedEntityAnnotation;
 import edu.stanford.nlp.ie.NERClassifierCombiner;
 import edu.stanford.nlp.ie.regexp.NumberSequenceClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.parser.tools.PunctEquivalenceClasser;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.DefaultPaths;
@@ -23,7 +21,6 @@ import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
 import edu.stanford.nlp.pipeline.ParserAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -163,26 +160,6 @@ public class CoreNLPUtil {
 		if (!firstLabel.has(NamedEntityAnnotation.class)) {
 			getNER().annotate(annotation);
 		}
-	}
-
-	public static String treeToString(Tree tree, int maxLength) {
-		StringBuilder builder = new StringBuilder();
-		for (Label label : tree.yield()) {
-			CoreLabel coreLabel = (CoreLabel) label;
-			String word = coreLabel.word();
-			if (!PunctEquivalenceClasser.getPunctClass(word).isEmpty()) {
-				continue;
-			}
-			if (builder.length() + word.length() > maxLength) {
-				break;
-			}
-			if (!word.equals("'s")) {
-				builder.append(" ");
-			}
-			builder.append(word);
-		}
-		String result = builder.toString().trim();
-		return result;
 	}
 
 }

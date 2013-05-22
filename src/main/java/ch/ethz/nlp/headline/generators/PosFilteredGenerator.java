@@ -16,16 +16,11 @@ public class PosFilteredGenerator extends CoreNLPGenerator {
 	}
 
 	@Override
-	public String generate(String content) {
-		Annotation annotation = new Annotation(content);
-
+	protected Annotation generate(Annotation annotation) {
 		annotation = sentencesSelector.select(annotation);
 		annotation = closedPosFilter.compress(annotation);
 
-		String result = annotation.toString();
-		getStatistics().addSummaryResult(result);
-
-		return truncate(result);
+		return annotation;
 	}
 
 }

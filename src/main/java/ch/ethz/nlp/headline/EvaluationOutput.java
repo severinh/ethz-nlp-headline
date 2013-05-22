@@ -85,11 +85,7 @@ public class EvaluationOutput {
 
 	private List<CoreLabel> getLabels(String content) {
 		Annotation annotation = new Annotation(content);
-		CoreNLPUtil.getTokenizer().annotate(annotation);
-		CoreNLPUtil.getSentenceSplitter().annotate(annotation);
-		CoreNLPUtil.getPosTagger().annotate(annotation);
-		CoreNLPUtil.getLemmatizer().annotate(annotation);
-
+		CoreNLPUtil.ensureLemmaAnnotation(annotation);
 		return annotation.get(TokensAnnotation.class);
 	}
 
