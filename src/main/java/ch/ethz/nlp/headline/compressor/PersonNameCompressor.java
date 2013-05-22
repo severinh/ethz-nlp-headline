@@ -2,6 +2,7 @@ package ch.ethz.nlp.headline.compressor;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
@@ -21,7 +22,7 @@ public class PersonNameCompressor extends TreeCompressor {
 	}
 
 	private boolean isPerson(CoreLabel label) {
-		return label.ner() != null && label.ner().equals("PERSON");
+		return Objects.equals(label.ner(), "PERSON");
 	}
 
 	@Override

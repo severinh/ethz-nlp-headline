@@ -38,9 +38,6 @@ public class ClosedPosFilter implements SentencesCompressor {
 			}
 		}
 
-		// TODO: The CoreMap will become inconsistent. Position annotations etc.
-		// will not be updated. This may not necessarily be a problem.
-
 		return annotation;
 	}
 
