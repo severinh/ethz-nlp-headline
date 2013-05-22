@@ -32,7 +32,7 @@ import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
-public class CoreNLPUtil {
+public final class CoreNLPUtil {
 
 	private static PTBTokenizerAnnotator TOKENIZER_INSTANCE;
 	private static WordsToSentencesAnnotator SENTENCE_SPLITTER_INSTANCE;
@@ -41,6 +41,10 @@ public class CoreNLPUtil {
 	private static ParserAnnotator PARSER_INSTANCE;
 	private static NERCombinerAnnotator NER_INSTANCE;
 	private static MaxentTagger TAGGER_INSTANCE;
+
+	private CoreNLPUtil() {
+		// nop
+	}
 
 	public static Annotator getTokenizer() {
 		if (TOKENIZER_INSTANCE == null) {
@@ -195,7 +199,7 @@ public class CoreNLPUtil {
 
 	};
 
-	public static final Annotation sentencesToAnnotation(List<CoreMap> sentences) {
+	public static Annotation sentencesToAnnotation(List<CoreMap> sentences) {
 		// The text is probably only for debugging convenience
 		// The CharacterOffset*Annotation and Token*Annotation of individual
 		// sentences will not be in sync with the new text, but rather refer to
