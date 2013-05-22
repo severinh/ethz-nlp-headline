@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import ch.ethz.nlp.headline.EvaluationOutput.AnsiColor;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
@@ -81,7 +80,7 @@ public class AppositivePruner extends TreeCompressor {
 			});
 
 			String trimmedText = StringUtils.join(prunedWords, " ");
-			logTrimming(trimmedText, AnsiColor.PURPLE.makeString("Appositive"));
+			logTrimming(trimmedText, "Appositive");
 		}
 
 		return tree;

@@ -10,8 +10,6 @@ import java.util.Stack;
 import com.google.common.collect.ImmutableSet;
 
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Filter;
@@ -155,30 +153,14 @@ public class HedgeTrimmer extends TreeCompressor {
 		}
 
 		if (!candidates.isEmpty()) {
-			// Just eliminate the right-most and deepest candidate for the
-			// moment
-			final CoreLabel candidate = candidates.get(candidates.size() - 1);
-			fullTree = fullTree.prune(new Filter<Tree>() {
+			// Just eliminate the right-most, deepest candidate for the moment
+			CoreLabel candidate = candidates.get(candidates.size() - 1);
+			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(candidate);
+			fullTree = fullTree.prune(treeFilter);
 
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean accept(Tree tree) {
-					CoreLabel label = (CoreLabel) tree.label();
-					if (label != null
-							&& Objects.equals(
-									label.get(BeginIndexAnnotation.class),
-									candidate.get(BeginIndexAnnotation.class))
-							&& Objects.equals(
-									label.get(EndIndexAnnotation.class),
-									candidate.get(EndIndexAnnotation.class))) {
-						logTrimming(tree, "Iterative Shortening Rule 1");
-						return false;
-					}
-					return true;
-				}
-
-			});
+			for (Tree prunedTree : treeFilter.getPrunedTrees()) {
+				logTrimming(prunedTree, "Iterative Shortening Rule 1");
+			}
 		}
 
 		return fullTree;
