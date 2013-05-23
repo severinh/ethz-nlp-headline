@@ -26,8 +26,6 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalStructure;
 import edu.stanford.nlp.trees.LabeledScoredTreeNode;
 import edu.stanford.nlp.trees.TreeGraphNode;
-import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
-import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 public class AnnotationCache implements AnnotationProvider {
@@ -116,11 +114,6 @@ public class AnnotationCache implements AnnotationProvider {
 		// TODO: SUTime creates some non-serializable objects
 		// CoreNLPUtil.ensureNamedEntityTagAnnotation(annotation);
 		CoreNLPUtil.ensureTreeAnnotation(annotationToParse);
-
-		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
-			sentence.remove(CollapsedCCProcessedDependenciesAnnotation.class);
-			sentence.remove(CollapsedDependenciesAnnotation.class);
-		}
 
 		return annotation;
 	}
