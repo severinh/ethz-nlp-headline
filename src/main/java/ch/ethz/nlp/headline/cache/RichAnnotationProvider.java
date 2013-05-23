@@ -7,6 +7,14 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 
+/**
+ * Builds annotations where tokenization, sentence splitting, POS recognition,
+ * lemmatizing, named entity recognition and parsing have already been
+ * performed.
+ * 
+ * Parsing is the most expensive task of the above, so it is only applied to the
+ * first sentence.
+ */
 public class RichAnnotationProvider implements AnnotationProvider {
 
 	private static final int DEFAULT_NUM_PARSED_SENTENCES = 1;
