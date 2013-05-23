@@ -5,7 +5,7 @@ import java.util.Map;
 
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.util.AnnotationCache;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 
 import com.google.common.collect.HashMultiset;
@@ -33,11 +33,13 @@ public class TfIdfProvider {
 		this.numDocuments = numDocs;
 	}
 
-	public static TfIdfProvider of(AnnotationCache cache, Dataset dataset) {
+	public static TfIdfProvider of(AnnotationProvider annotationProvider,
+			Dataset dataset) {
 		TfIdfProvider result = new TfIdfProvider(dataset.getDocuments().size());
 
 		for (Document document : dataset.getDocuments()) {
-			Annotation annotation = cache.getAnnotation(document.getContent());
+			String content = document.getContent();
+			Annotation annotation = annotationProvider.getAnnotation(content);
 			Multiset<String> lemmaFreqs = getLemmaFreqs(annotation);
 			for (String lemma : lemmaFreqs.elementSet()) {
 				int newFrequency = result.getDocumentFrequency(lemma) + 1;

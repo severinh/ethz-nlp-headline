@@ -1,4 +1,4 @@
-package ch.ethz.nlp.headline.util;
+package ch.ethz.nlp.headline.cache;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +14,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -28,7 +30,7 @@ import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedCCP
 import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
-public class AnnotationCache {
+public class AnnotationCache implements AnnotationProvider {
 
 	private static final String DEFAULT_ROOT = "cache";
 	private static final int DEFAULT_NUM_PARSED_SENTENCES = 1;
@@ -70,6 +72,7 @@ public class AnnotationCache {
 				DEFAULT_NUM_PARSED_SENTENCES);
 	}
 
+	@Override
 	public Annotation getAnnotation(String content) {
 		String hash = stringToMD5(content);
 		Path cacheFilePath = rootFolder.resolve(hash);
@@ -135,7 +138,7 @@ public class AnnotationCache {
 		}
 	}
 
-	public String stringToMD5(String content) {
+	private String stringToMD5(String content) {
 		byte[] bytes = content.getBytes(Charset.forName("UTF-8"));
 		messageDigest.update(bytes, 0, content.length());
 		return new BigInteger(1, messageDigest.digest()).toString(16);

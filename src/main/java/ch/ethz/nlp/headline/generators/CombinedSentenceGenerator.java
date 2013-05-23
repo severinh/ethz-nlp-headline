@@ -1,8 +1,8 @@
 package ch.ethz.nlp.headline.generators;
 
+import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.selection.ScoredSentencesSelector;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
-import ch.ethz.nlp.headline.util.AnnotationCache;
 import edu.stanford.nlp.pipeline.Annotation;
 
 /**

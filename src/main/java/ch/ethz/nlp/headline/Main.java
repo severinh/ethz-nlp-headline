@@ -9,13 +9,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.ethz.nlp.headline.cache.AnnotationCache;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
-import ch.ethz.nlp.headline.util.AnnotationCache;
 import ch.ethz.nlp.headline.visualization.PeerInspector;
 
 import com.google.common.collect.LinkedListMultimap;
@@ -32,9 +33,9 @@ public class Main {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
-		AnnotationCache cache = new AnnotationCache();
-
+		AnnotationProvider cache = new AnnotationCache();
 		TfIdfProvider tfIdfProvider = TfIdfProvider.of(cache, dataset);
+
 		List<CoreNLPGenerator> generators = new ArrayList<>();
 		generators.add(new BaselineGenerator(cache));
 		// generators.add(new PosFilteredGenerator());
