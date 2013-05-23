@@ -45,7 +45,8 @@ public class AppositivePruner extends TreeCompressor {
 		for (IndexedWord word : graph.vertexSet()) {
 			Set<GrammaticalRelation> relations = graph.relns(word);
 			for (GrammaticalRelation relation : relations) {
-				if (Objects.equals(relation.getShortName(), "appos")) {
+				if (Objects.equals(relation.getShortName(), "appos")
+						|| Objects.equals(relation.getShortName(), "rcmod")) {
 					appositiveRoots.add(word);
 				}
 			}
