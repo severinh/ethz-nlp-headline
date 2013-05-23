@@ -1,7 +1,6 @@
 package ch.ethz.nlp.headline.learning;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
@@ -12,6 +11,10 @@ import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
+import ch.ethz.nlp.headline.cache.AnnotationCache;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
+import ch.ethz.nlp.headline.cache.RichAnnotationProvider;
+import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
@@ -35,12 +38,14 @@ public class FeatureWeightRegression {
 
 	private final RougeN rouge = new RougeN(1);
 	private final TfIdfProvider tfIdfProvider;
+	private final AnnotationProvider annotationProvider;
 
 	private final ContentPreprocessor preprocessor;
 
-	public FeatureWeightRegression(TfIdfProvider tfIdfProvider) {
+	public FeatureWeightRegression(AnnotationProvider annotationProvider, TfIdfProvider tfIdfProvider) {
 		this.tfIdfProvider = tfIdfProvider;
 		this.preprocessor = CombinedPreprocessor.all();
+		this.annotationProvider = annotationProvider;
 	}
 
 	public void analyse(List<Task> tasks) {
@@ -58,10 +63,10 @@ public class FeatureWeightRegression {
 			List<Annotation> models = new ArrayList<>();
 			for (Model model : task.getModels()) {
 				String modelContent = model.getContent();
-				models.add(getAnnotation(modelContent));
+				models.add(annotationProvider.getAnnotation(modelContent));
 			}
 
-			Annotation documentAnnotation = getAnnotation(documentContent);
+			Annotation documentAnnotation = annotationProvider.getAnnotation(documentContent);
 			SentenceFeatureExtractor extractor = new SentenceFeatureExtractor(
 					tfIdfProvider, documentAnnotation);
 			List<CoreMap> sentences = documentAnnotation
@@ -119,18 +124,17 @@ public class FeatureWeightRegression {
 		
 	}
 
-	private Annotation getAnnotation(String content) {
-		Annotation annotation = new Annotation(content);
-		CoreNLPUtil.ensureLemmaAnnotation(annotation);
-		return annotation;
-	}
-
 	public static void main(String[] args) {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
-		TfIdfProvider tfIdfProvider = TfIdfProvider.of(dataset);
+		AnnotationProvider richCache = new AnnotationCache(
+				new RichAnnotationProvider());
+		AnnotationProvider slimCache = new AnnotationCache(
+				new SlimAnnotationProvider());
+		
+		TfIdfProvider tfIdfProvider = TfIdfProvider.of(richCache, dataset);
 		FeatureWeightRegression regression = new FeatureWeightRegression(
-				tfIdfProvider);
+				richCache, tfIdfProvider);
 		regression.analyse(tasks);
 	}
 
