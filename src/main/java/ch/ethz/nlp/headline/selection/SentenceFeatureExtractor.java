@@ -15,7 +15,7 @@ public class SentenceFeatureExtractor {
 	private static final double LENGTH_WEIGHT = 2.0;
 	private static final double POS_WEIGHT = 6.0;
 	private static final double TFIDF_WEIGHT = 0.20;
-	private static final double NNP_WEIGHT = 1;
+	//private static final double NNP_WEIGHT = 1;
 	
 	private final PriorityQueue<String> tfIdfMap;
 	private Annotation documentAnnotation;
@@ -30,7 +30,7 @@ public class SentenceFeatureExtractor {
 		
 		addFeature(new TfIdfFeature(), TFIDF_WEIGHT);
 		addFeature(new PosFeature(), POS_WEIGHT);
-		addFeature(new NNPFeature(), NNP_WEIGHT);
+		//addFeature(new NNPFeature(), NNP_WEIGHT);
 		addFeature(new LengthFeature(), LENGTH_WEIGHT);
 	}
 	
@@ -49,7 +49,7 @@ public class SentenceFeatureExtractor {
 		return new SentenceScore(sentence, names, values, weights);
 	}
 
-	private class TfIdfFeature implements SentenceFeature {
+	protected class TfIdfFeature implements SentenceFeature {
 
 		@Override
 		public double extract(CoreMap sentence) {
@@ -70,8 +70,8 @@ public class SentenceFeatureExtractor {
 		}
 	}
 
-	private class PosFeature implements SentenceFeature {
-		private static final int POS_THRESHOLD = 4;
+	protected class PosFeature implements SentenceFeature {
+		private static final int POS_THRESHOLD = 1;
 
 		@Override
 		public double extract(CoreMap sentence) {
@@ -79,7 +79,7 @@ public class SentenceFeatureExtractor {
 					.get(SentencesAnnotation.class);
 			int pos = sentences.indexOf(sentence);
 			assert (pos >= 0);
-			return pos < POS_THRESHOLD ? 4 - pos : 0.0;
+			return pos < POS_THRESHOLD ? 1.0 : 0.0;
 		}
 
 		@Override
@@ -88,7 +88,7 @@ public class SentenceFeatureExtractor {
 		}
 	}
 
-	private class NNPFeature implements SentenceFeature {
+	protected class NNPFeature implements SentenceFeature {
 		private static final int MIN_NNP = 3;
 
 		@Override
@@ -111,7 +111,7 @@ public class SentenceFeatureExtractor {
 		}
 	}
 
-	private class LengthFeature implements SentenceFeature {
+	protected class LengthFeature implements SentenceFeature {
 		private static final int MIN_LENGTH = 10;
 
 		@Override
