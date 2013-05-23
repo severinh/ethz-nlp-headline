@@ -1,8 +1,12 @@
 package ch.ethz.nlp.headline.generators;
 
+import com.google.common.collect.ImmutableList;
+
 import ch.ethz.nlp.headline.compressor.AppositivePruner;
+import ch.ethz.nlp.headline.compressor.CombinedCompressor;
 import ch.ethz.nlp.headline.compressor.HedgeTrimmer;
 import ch.ethz.nlp.headline.compressor.PersonNameCompressor;
+import ch.ethz.nlp.headline.compressor.SentencesCompressor;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.selection.SentencesSelector;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
@@ -13,18 +17,16 @@ import edu.stanford.nlp.pipeline.Annotation;
 public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 
 	private final SentencesSelector sentencesSelector;
-	private final PersonNameCompressor nameSimplifier;
-	private final AppositivePruner appositivePruner;
-	private final HedgeTrimmer hedgeTrimmer;
+	private final SentencesCompressor sentencesCompressor;
 
 	public HedgeTrimmerGenerator(TfIdfProvider tfIdfProvider) {
 		super(CombinedPreprocessor.all(),
 				GentleAnnotationStringBuilder.INSTANCE);
 
 		this.sentencesSelector = new TfIdfSentencesSelector(tfIdfProvider);
-		this.nameSimplifier = new PersonNameCompressor();
-		this.appositivePruner = new AppositivePruner();
-		this.hedgeTrimmer = new HedgeTrimmer();
+		this.sentencesCompressor = new CombinedCompressor(ImmutableList.of(
+				new PersonNameCompressor(), new AppositivePruner(),
+				new HedgeTrimmer()));
 	}
 
 	@Override
@@ -35,9 +37,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 	@Override
 	protected Annotation generate(Annotation annotation) {
 		annotation = sentencesSelector.select(annotation);
-		annotation = nameSimplifier.compress(annotation);
-		annotation = appositivePruner.compress(annotation);
-		annotation = hedgeTrimmer.compress(annotation);
+		annotation = sentencesCompressor.compress(annotation);
 
 		return annotation;
 	}
