@@ -10,6 +10,8 @@ public abstract class SentencesSelector {
 
 	public Annotation select(Annotation annotation) {
 		CoreNLPUtil.ensureSentencesAnnotation(annotation);
+		CoreNLPUtil.ensurePartOfSpeechAnnotation(annotation);
+
 		List<CoreMap> selectedSentences = selectImpl(annotation);
 		return CoreNLPUtil.sentencesToAnnotation(selectedSentences);
 	}

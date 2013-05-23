@@ -3,10 +3,12 @@ package ch.ethz.nlp.headline.selection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.PriorityQueue;
@@ -17,11 +19,15 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 
 	private static final int NUM_SENTENCES = 1;
 	private static final int MIN_LENGTH = 10;
-	private static final int POS_THRESHOLD = 1;
+	private static final int MIN_NNP = 3;
+
+	private static final int POS_THRESHOLD = 4;
 
 	private static final double LENGTH_WEIGHT = 2.0;
 	private static final double POS_WEIGHT = 6.0;
 	private static final double TFIDF_WEIGHT = 0.20;
+	private static final double NNP_WEIGHT = 1;
+
 
 	public TfIdfSentencesSelector(TfIdfProvider tfIdfProvider) {
 		this.tfIdfProvider = tfIdfProvider;
@@ -51,7 +57,21 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 			scores.setTfIdfScore(sentenceTfIdfScore);
 
 			// pos
-			scores.setPositionScore(i < POS_THRESHOLD ? 1.0 : 0.0);
+			scores.setPositionScore(i < POS_THRESHOLD ? 4-i : 0.0);
+			
+			// NNP (proper nouns)
+			int numberOfNNP = 0;
+			for (CoreLabel label : labels) {
+				String tag = label.tag();
+				if (Objects.equals(tag, "NNP")) {
+					numberOfNNP++;
+				}
+			}
+			scores.setNnpScore(numberOfNNP < MIN_NNP ? -5 : 0); 
+			//System.out.println(sentence.get(TextAnnotation.class) + " NNP: " + numberOfNNP);
+			
+			
+
 
 			// length
 			int len = labels.size();
@@ -83,6 +103,8 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 		private double tfIdfScore;
 		private double positionScore;
 		private double lengthScore;
+		private double nnpScore;
+
 
 		public double getTfIdfScore() {
 			return tfIdfScore;
@@ -116,6 +138,14 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 			return position;
 		}
 
+		public double getNnpScore() {
+			return nnpScore;
+		}
+
+		public void setNnpScore(double nnpScore) {
+			this.nnpScore = nnpScore;
+		}
+
 		public SentenceScores(CoreMap sentence, int position) {
 			this.sentence = sentence;
 			this.position = position;
@@ -123,7 +153,7 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 
 		public double getCombinedScore() {
 			return TFIDF_WEIGHT * tfIdfScore + POS_WEIGHT * positionScore
-					+ LENGTH_WEIGHT * lengthScore;
+					+ LENGTH_WEIGHT * lengthScore + NNP_WEIGHT*nnpScore;
 		}
 
 		@Override
@@ -142,7 +172,7 @@ public class TfIdfSentencesSelector extends SentencesSelector {
 		@Override
 		public String toString() {
 			return "total: " + getCombinedScore() + ", tfidf: " + tfIdfScore
-					+ ", pos: " + positionScore + ", " + lengthScore;
+					+ ", pos: " + positionScore + ", " + lengthScore + ", nnp: " + nnpScore;
 		}
 
 	}
