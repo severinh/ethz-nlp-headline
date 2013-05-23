@@ -1,7 +1,8 @@
 package ch.ethz.nlp.headline.generators;
 
-import ch.ethz.nlp.headline.selection.TfIdfProvider;
 import ch.ethz.nlp.headline.selection.ScoredSentencesSelector;
+import ch.ethz.nlp.headline.selection.TfIdfProvider;
+import ch.ethz.nlp.headline.util.AnnotationCache;
 import edu.stanford.nlp.pipeline.Annotation;
 
 /**
@@ -11,7 +12,10 @@ public class CombinedSentenceGenerator extends CoreNLPGenerator {
 
 	private final ScoredSentencesSelector sentencesSelector;
 
-	public CombinedSentenceGenerator(TfIdfProvider tfIdfProvider) {
+	public CombinedSentenceGenerator(AnnotationCache cache,
+			TfIdfProvider tfIdfProvider) {
+		super(cache);
+
 		this.sentencesSelector = new ScoredSentencesSelector(tfIdfProvider);
 	}
 

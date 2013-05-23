@@ -11,6 +11,7 @@ import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.selection.SentencesSelector;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
 import ch.ethz.nlp.headline.selection.ScoredSentencesSelector;
+import ch.ethz.nlp.headline.util.AnnotationCache;
 import ch.ethz.nlp.headline.util.GentleAnnotationStringBuilder;
 import edu.stanford.nlp.pipeline.Annotation;
 
@@ -19,8 +20,9 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 	private final SentencesSelector sentencesSelector;
 	private final SentencesCompressor sentencesCompressor;
 
-	public HedgeTrimmerGenerator(TfIdfProvider tfIdfProvider) {
-		super(CombinedPreprocessor.all(),
+	public HedgeTrimmerGenerator(AnnotationCache cache,
+			TfIdfProvider tfIdfProvider) {
+		super(cache, CombinedPreprocessor.all(),
 				GentleAnnotationStringBuilder.INSTANCE);
 
 		this.sentencesSelector = new ScoredSentencesSelector(tfIdfProvider);

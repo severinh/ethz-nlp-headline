@@ -2,30 +2,35 @@ package ch.ethz.nlp.headline.generators;
 
 import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
 import ch.ethz.nlp.headline.preprocessing.NopPreprocessor;
+import ch.ethz.nlp.headline.util.AnnotationCache;
 import ch.ethz.nlp.headline.util.AnnotationStringBuilder;
 import ch.ethz.nlp.headline.util.SimpleAnnotationStringBuilder;
 import edu.stanford.nlp.pipeline.Annotation;
 
 public abstract class CoreNLPGenerator implements Generator {
 
+	private final AnnotationCache cache;
 	private final ContentPreprocessor preprocessor;
 	private final AnnotationStringBuilder resultBuilder;
 
-	public CoreNLPGenerator(ContentPreprocessor preprocessor,
+	public CoreNLPGenerator(AnnotationCache cache,
+			ContentPreprocessor preprocessor,
 			AnnotationStringBuilder resultBuilder) {
+		this.cache = cache;
 		this.preprocessor = preprocessor;
 		this.resultBuilder = resultBuilder;
 	}
 
-	public CoreNLPGenerator() {
-		this(NopPreprocessor.INSTANCE, SimpleAnnotationStringBuilder.INSTANCE);
+	public CoreNLPGenerator(AnnotationCache cache) {
+		this(cache, NopPreprocessor.INSTANCE,
+				SimpleAnnotationStringBuilder.INSTANCE);
 	}
 
 	@Override
 	public String generate(String content) {
 		content = preprocessor.preprocess(content);
 
-		Annotation annotation = new Annotation(content);
+		Annotation annotation = cache.getAnnotation(content);
 		annotation = generate(annotation);
 
 		String result = resultBuilder.build(annotation, Integer.MAX_VALUE);

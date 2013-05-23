@@ -15,6 +15,7 @@ import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
+import ch.ethz.nlp.headline.util.AnnotationCache;
 import ch.ethz.nlp.headline.visualization.PeerInspector;
 
 import com.google.common.collect.LinkedListMultimap;
@@ -31,12 +32,14 @@ public class Main {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
-		TfIdfProvider tfIdfProvider = TfIdfProvider.of(dataset);
+		AnnotationCache cache = new AnnotationCache();
+
+		TfIdfProvider tfIdfProvider = TfIdfProvider.of(cache, dataset);
 		List<CoreNLPGenerator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator());
+		generators.add(new BaselineGenerator(cache));
 		// generators.add(new PosFilteredGenerator());
 		// generators.add(new CombinedSentenceGenerator(tfIdfProvider));
-		generators.add(new HedgeTrimmerGenerator(tfIdfProvider));
+		generators.add(new HedgeTrimmerGenerator(cache, tfIdfProvider));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 		PeerInspector peerInspector = new PeerInspector();
@@ -45,6 +48,7 @@ public class Main {
 			Task task = tasks.get(i);
 			Document document = task.getDocument();
 			String documentId = document.getId().toString();
+			String documentContent = document.getContent();
 
 			if (config.getFilterDocumentId().isPresent()
 					&& !documentId.equals(config.getFilterDocumentId().get())) {
@@ -55,8 +59,7 @@ public class Main {
 					tasks.size(), documentId));
 
 			for (Generator generator : generators) {
-				String content = document.getContent();
-				String headline = generator.generate(content);
+				String headline = generator.generate(documentContent);
 				Peer peer = dataset.makePeer(task, generator.getId());
 				try {
 					peer.store(headline);

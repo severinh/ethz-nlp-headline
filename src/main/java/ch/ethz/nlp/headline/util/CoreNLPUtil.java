@@ -4,9 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.NamedEntityAnnotation;
@@ -27,9 +29,14 @@ import edu.stanford.nlp.pipeline.NERCombinerAnnotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
 import edu.stanford.nlp.pipeline.ParserAnnotator;
+import edu.stanford.nlp.pipeline.ParserAnnotatorUtils;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
+import edu.stanford.nlp.trees.semgraph.SemanticGraph;
+import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
@@ -79,7 +86,10 @@ public final class CoreNLPUtil {
 
 	public static Annotator getParser() {
 		if (PARSER_INSTANCE == null) {
-			PARSER_INSTANCE = new ParserAnnotator(false, Integer.MAX_VALUE);
+			Properties properties = new Properties();
+			properties
+					.setProperty("parse.buildgraphs", Boolean.toString(false));
+			PARSER_INSTANCE = new ParserAnnotator("parse", properties);
 		}
 		return PARSER_INSTANCE;
 	}
@@ -157,10 +167,26 @@ public final class CoreNLPUtil {
 	public static void ensureTreeAnnotation(Annotation annotation) {
 		ensureSentencesAnnotation(annotation);
 
-		CoreMap sentence = annotation.get(SentencesAnnotation.class).get(0);
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			if (!sentence.has(TreeAnnotation.class)) {
+				getParser().annotate(
+						sentencesToAnnotation(ImmutableList.of(sentence)));
+			}
+		}
+	}
 
-		if (!sentence.has(TreeAnnotation.class)) {
-			getParser().annotate(annotation);
+	public static void ensureBasicDependencyAnnotation(Annotation annotation) {
+		ensureTreeAnnotation(annotation);
+
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			if (!sentence.has(BasicDependenciesAnnotation.class)) {
+				Tree tree = sentence.get(TreeAnnotation.class);
+				SemanticGraph uncollapsedDeps = ParserAnnotatorUtils
+						.generateUncollapsedDependencies(tree);
+				sentence.set(
+						SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class,
+						uncollapsedDeps);
+			}
 		}
 	}
 
