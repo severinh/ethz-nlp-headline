@@ -8,20 +8,12 @@ import com.google.common.collect.ImmutableSet;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.Filter;
 
 public class HedgeTrimmer extends TreeCompressor {
-
-	private static final Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a",
-			"the", "have", "be", "its", "here");
 
 	@Override
 	public Tree compress(Tree tree, CoreMap sentence) {
 		tree = getLowestLeftmostSWithNPVP(tree);
-		tree = removeLowContentNodes(tree);
-		if (tree == null) {
-			return null;
-		}
 		// TODO: Currently not used because it makes the performance worse
 		// tree = shortenIterativelyRule1(tree);
 		tree = shortenIterativelyRule2(tree);
@@ -67,26 +59,6 @@ public class HedgeTrimmer extends TreeCompressor {
 		}
 
 		return result;
-	}
-
-	private Tree removeLowContentNodes(Tree tree) {
-		tree = tree.prune(new Filter<Tree>() {
-
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean accept(Tree tree) {
-				CoreLabel label = (CoreLabel) tree.label();
-				String lemma = label.lemma();
-				if (TRIMMED_LEMMAS.contains(lemma)) {
-					return false;
-				}
-				return true;
-			}
-
-		});
-
-		return tree;
 	}
 
 	@SuppressWarnings("unused")
