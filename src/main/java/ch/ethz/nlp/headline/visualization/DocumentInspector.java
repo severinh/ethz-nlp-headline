@@ -7,6 +7,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Task;
@@ -30,10 +32,7 @@ public class DocumentInspector {
 					"specify at least one document id");
 		}
 
-		Set<String> selectedDocumentIds = new HashSet<>();
-		for (int i = 0; i < args.length; i++) {
-			selectedDocumentIds.add(args[i]);
-		}
+		Set<String> selectedDocumentIds = ImmutableSet.copyOf(args);
 
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
