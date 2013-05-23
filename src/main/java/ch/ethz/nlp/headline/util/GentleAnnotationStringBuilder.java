@@ -3,7 +3,6 @@ package ch.ethz.nlp.headline.util;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.parser.tools.PunctEquivalenceClasser;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -18,7 +17,7 @@ public class GentleAnnotationStringBuilder implements AnnotationStringBuilder {
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			for (CoreLabel label : sentence.get(TokensAnnotation.class)) {
 				String word = label.word();
-				if (!PunctEquivalenceClasser.getPunctClass(word).isEmpty()) {
+				if (CoreNLPUtil.isPunctuation(word)) {
 					continue;
 				}
 				if (builder.length() + word.length() > maxLength) {

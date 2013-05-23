@@ -9,10 +9,13 @@ import ch.ethz.nlp.headline.util.CoreNLPUtil;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.BinaryHeapPriorityQueue;
+import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.PriorityQueue;
 
 public class TfIdfProvider {
@@ -51,18 +54,20 @@ public class TfIdfProvider {
 		CoreNLPUtil.ensureLemmaAnnotation(annotation);
 		Multiset<String> termFreqs = HashMultiset.create();
 
-		for (CoreLabel label : annotation.get(TokensAnnotation.class)) {
-			termFreqs.add(label.lemma());
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			for (CoreLabel label : sentence.get(TokensAnnotation.class)) {
+				termFreqs.add(label.lemma());
+			}
 		}
 
 		return termFreqs;
 	}
 
-	protected int getNumDocuments() {
+	public int getNumDocuments() {
 		return numDocuments;
 	}
 
-	protected int getDocumentFrequency(String lemma) {
+	public int getDocumentFrequency(String lemma) {
 		Integer result = documentFrequencies.get(lemma);
 		return (result == null) ? 0 : result;
 	}
@@ -70,7 +75,7 @@ public class TfIdfProvider {
 	/**
 	 * Compute the tf-idf score for each lemma in the given annotation.
 	 */
-	protected PriorityQueue<String> getTfIdfMap(Annotation annotation) {
+	public PriorityQueue<String> getTfIdfMap(Annotation annotation) {
 		Multiset<String> lemmaFreqs = getLemmaFreqs(annotation);
 		PriorityQueue<String> tfIdfMap = new BinaryHeapPriorityQueue<>();
 

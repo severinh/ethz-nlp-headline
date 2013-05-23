@@ -18,6 +18,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.parser.tools.PunctEquivalenceClasser;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.DefaultPaths;
@@ -217,6 +218,10 @@ public final class CoreNLPUtil {
 			builder.append(" ");
 		}
 		return builder.toString().trim();
+	}
+
+	public static boolean isPunctuation(String word) {
+		return !PunctEquivalenceClasser.getPunctClass(word).isEmpty();
 	}
 
 }
