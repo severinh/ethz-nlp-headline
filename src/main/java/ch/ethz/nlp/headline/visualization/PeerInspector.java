@@ -1,28 +1,30 @@
-package ch.ethz.nlp.headline;
+package ch.ethz.nlp.headline.visualization;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.ethz.nlp.headline.util.AnsiColor;
+import ch.ethz.nlp.headline.Model;
+import ch.ethz.nlp.headline.Peer;
+import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
-import ch.ethz.nlp.headline.util.NGramHitVisualizer;
 import ch.ethz.nlp.headline.util.RougeN;
 import edu.stanford.nlp.pipeline.Annotation;
 
-public class EvaluationOutput {
+public class PeerInspector {
 
 	private static final Logger LOG = LoggerFactory
-			.getLogger(EvaluationOutput.class);
+			.getLogger(PeerInspector.class);
 
 	private static final double ROUGE_1_THRESHOLD = 0.20;
 	private static final double ROUGE_2_THRESHOLD = 0.05;
 
 	private static final AnsiColor MODEL_COLOR = AnsiColor.BLUE;
 
-	public void log(Task task, Collection<Peer> peers) throws IOException {
+	public void inspect(Task task, Collection<Peer> peers) throws IOException {
 		RougeN rouge1 = new RougeN(1);
 		RougeN rouge2 = new RougeN(2);
 

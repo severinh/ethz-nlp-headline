@@ -1,4 +1,4 @@
-package ch.ethz.nlp.headline.util;
+package ch.ethz.nlp.headline.visualization;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.CoreAnnotations.AfterAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;

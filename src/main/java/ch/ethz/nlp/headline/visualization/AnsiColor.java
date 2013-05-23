@@ -1,4 +1,4 @@
-package ch.ethz.nlp.headline.util;
+package ch.ethz.nlp.headline.visualization;
 
 public enum AnsiColor {
 

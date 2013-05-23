@@ -15,6 +15,7 @@ import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
+import ch.ethz.nlp.headline.visualization.PeerInspector;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -38,7 +39,7 @@ public class Main {
 		generators.add(new HedgeTrimmerGenerator(tfIdfProvider));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
-		EvaluationOutput evaluationOutput = new EvaluationOutput();
+		PeerInspector peerInspector = new PeerInspector();
 
 		for (int i = 0; i < tasks.size(); i++) {
 			Task task = tasks.get(i);
@@ -66,7 +67,7 @@ public class Main {
 				peersMap.put(task, peer);
 			}
 
-			evaluationOutput.log(task, peersMap.get(task));
+			peerInspector.inspect(task, peersMap.get(task));
 		}
 
 		for (CoreNLPGenerator generator : generators) {

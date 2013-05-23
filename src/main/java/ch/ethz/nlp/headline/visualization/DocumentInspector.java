@@ -1,4 +1,4 @@
-package ch.ethz.nlp.headline.util;
+package ch.ethz.nlp.headline.visualization;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class DocumentInspector {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(DocumentInspector.class);
 
-	public void inspectDocumentInTask(Task task) {
+	public void inspect(Task task) {
 		NGramHitVisualizer visualizer = NGramHitVisualizer.of(task.getModels());
 		String result = visualizer.visualize(task.getDocument());
 		String id = task.getDocument().getId().toString();
@@ -39,7 +39,7 @@ public class DocumentInspector {
 				continue;
 			}
 
-			inspector.inspectDocumentInTask(task);
+			inspector.inspect(task);
 		}
 	}
 
