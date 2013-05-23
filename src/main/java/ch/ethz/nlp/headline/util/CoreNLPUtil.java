@@ -169,8 +169,9 @@ public final class CoreNLPUtil {
 
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			if (!sentence.has(TreeAnnotation.class)) {
-				getParser().annotate(
-						sentencesToAnnotation(ImmutableList.of(sentence)));
+				List<CoreMap> singleton = ImmutableList.of(sentence);
+				Annotation sentenceAnnotation = sentencesToAnnotation(singleton);
+				getParser().annotate(sentenceAnnotation);
 			}
 		}
 	}
@@ -181,11 +182,9 @@ public final class CoreNLPUtil {
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			if (!sentence.has(BasicDependenciesAnnotation.class)) {
 				Tree tree = sentence.get(TreeAnnotation.class);
-				SemanticGraph uncollapsedDeps = ParserAnnotatorUtils
+				SemanticGraph graph = ParserAnnotatorUtils
 						.generateUncollapsedDependencies(tree);
-				sentence.set(
-						SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class,
-						uncollapsedDeps);
+				sentence.set(BasicDependenciesAnnotation.class, graph);
 			}
 		}
 	}
