@@ -12,10 +12,10 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.PriorityQueue;
 
 public class SentenceFeatureExtractor {
-	private static final double LENGTH_WEIGHT = 2.0;
-	private static final double POS_WEIGHT = 6.0;
 	private static final double TFIDF_WEIGHT = 0.20;
-	//private static final double NNP_WEIGHT = 1;
+	private static final double POS_WEIGHT = 6.0;
+	private static final double NNP_WEIGHT = 1;
+	private static final double LENGTH_WEIGHT = 2.0;
 	
 	private final PriorityQueue<String> tfIdfMap;
 	private Annotation documentAnnotation;
@@ -58,7 +58,9 @@ public class SentenceFeatureExtractor {
 			for (CoreLabel label : labels) {
 				String lemma = label.lemma();
 				double tfIdf = tfIdfMap.getPriority(lemma);
-				sentenceTfIdfScore += tfIdf;
+				if (!Double.isInfinite(tfIdf) && !Double.isNaN(tfIdf)) {
+					sentenceTfIdfScore += tfIdf;
+				}
 			}
 			sentenceTfIdfScore /= labels.size();
 			return sentenceTfIdfScore;

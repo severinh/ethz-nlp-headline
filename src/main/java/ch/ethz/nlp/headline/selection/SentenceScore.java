@@ -7,9 +7,9 @@ import edu.stanford.nlp.util.CoreMap;
 public class SentenceScore implements Comparable<SentenceScore> {
 
 	private final CoreMap sentence;
-	private List<String> names;
-	private List<Double> values;
-	private List<Double> weights;
+	private final List<String> names;
+	private final List<Double> values;
+	private final List<Double> weights;
 
 	public SentenceScore(CoreMap sentence, List<String> names, List<Double> values, List<Double> weights) {
 		this.sentence = sentence;
@@ -55,5 +55,18 @@ public class SentenceScore implements Comparable<SentenceScore> {
 	public CoreMap getSentence() {
 		return sentence;
 	}
+	
+	public List<String> getNames() {
+		return names;
+	}
+
+	public List<Double> getValues() {
+		return values;
+	}
+
+	public List<Double> getWeights() {
+		return weights;
+	}
+
 
 }
