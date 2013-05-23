@@ -101,8 +101,10 @@ public final class CoreNLPUtil {
 					DefaultPaths.DEFAULT_NER_MUC_MODEL,
 					DefaultPaths.DEFAULT_NER_CONLL_MODEL };
 			NERClassifierCombiner nerCombiner = null;
-			boolean applyNumericClassifiers = NERClassifierCombiner.APPLY_NUMERIC_CLASSIFIERS_DEFAULT;
-			boolean useSUTime = NumberSequenceClassifier.USE_SUTIME_DEFAULT;
+			boolean applyNumericClassifiers = true;
+			// SUTime uses objects that cannot be serialized and does not
+			// improve the performance of our date trimmer
+			boolean useSUTime = false;
 			try {
 				nerCombiner = new NERClassifierCombiner(
 						applyNumericClassifiers, useSUTime, models);

@@ -103,6 +103,7 @@ public class AnnotationCache implements AnnotationProvider {
 	private Annotation buildAnnotation(String content) {
 		Annotation annotation = new Annotation(content);
 		CoreNLPUtil.ensureLemmaAnnotation(annotation);
+		CoreNLPUtil.ensureNamedEntityTagAnnotation(annotation);
 
 		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
 		int numSentences = Math.min(numParsedSentences, sentences.size());
@@ -111,8 +112,6 @@ public class AnnotationCache implements AnnotationProvider {
 
 		Annotation annotationToParse = CoreNLPUtil
 				.sentencesToAnnotation(sentencesToParse);
-		// TODO: SUTime creates some non-serializable objects
-		// CoreNLPUtil.ensureNamedEntityTagAnnotation(annotation);
 		CoreNLPUtil.ensureTreeAnnotation(annotationToParse);
 
 		return annotation;
