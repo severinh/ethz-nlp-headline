@@ -2,6 +2,7 @@ package ch.ethz.nlp.headline.generators;
 
 import ch.ethz.nlp.headline.selection.FirstSentenceSelector;
 import ch.ethz.nlp.headline.selection.SentencesSelector;
+import ch.ethz.nlp.headline.util.AnnotationCache;
 import edu.stanford.nlp.pipeline.Annotation;
 
 /**
@@ -10,6 +11,10 @@ import edu.stanford.nlp.pipeline.Annotation;
 public class BaselineGenerator extends CoreNLPGenerator {
 
 	private final SentencesSelector sentencesSelector = new FirstSentenceSelector();
+
+	public BaselineGenerator(AnnotationCache cache) {
+		super(cache);
+	}
 
 	@Override
 	public String getId() {

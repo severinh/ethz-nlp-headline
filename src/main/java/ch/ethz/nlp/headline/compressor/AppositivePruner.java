@@ -7,7 +7,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
+import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.semgraph.SemanticGraph;
@@ -15,6 +17,13 @@ import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.BasicDepende
 import edu.stanford.nlp.util.CoreMap;
 
 public class AppositivePruner extends TreeCompressor {
+
+	@Override
+	public Annotation compress(Annotation annotation) {
+		CoreNLPUtil.ensureBasicDependencyAnnotation(annotation);
+
+		return super.compress(annotation);
+	}
 
 	@Override
 	protected Tree compress(Tree tree, CoreMap sentence) {
