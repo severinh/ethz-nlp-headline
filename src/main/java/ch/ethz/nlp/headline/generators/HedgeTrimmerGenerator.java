@@ -1,10 +1,12 @@
 package ch.ethz.nlp.headline.generators;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.compressor.AppositivePruner;
 import ch.ethz.nlp.headline.compressor.CombinedCompressor;
+import ch.ethz.nlp.headline.compressor.DatePruner;
 import ch.ethz.nlp.headline.compressor.HedgeTrimmer;
 import ch.ethz.nlp.headline.compressor.PersonNameCompressor;
 import ch.ethz.nlp.headline.compressor.SentencesCompressor;
@@ -25,10 +27,14 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		super(annotationProvider, CombinedPreprocessor.all(),
 				GentleAnnotationStringBuilder.INSTANCE);
 
+		List<SentencesCompressor> compressors = new ArrayList<>();
+		compressors.add(new PersonNameCompressor());
+		compressors.add(new AppositivePruner());
+		compressors.add(new DatePruner());
+		compressors.add(new HedgeTrimmer());
+
 		this.sentencesSelector = new ScoredSentencesSelector(tfIdfProvider);
-		this.sentencesCompressor = new CombinedCompressor(ImmutableList.of(
-				new PersonNameCompressor(), new AppositivePruner(),
-				new HedgeTrimmer()));
+		this.sentencesCompressor = new CombinedCompressor(compressors);
 	}
 
 	@Override

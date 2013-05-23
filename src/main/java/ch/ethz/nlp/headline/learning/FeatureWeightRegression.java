@@ -14,7 +14,6 @@ import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.cache.RichAnnotationProvider;
-import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
@@ -129,8 +128,6 @@ public class FeatureWeightRegression {
 		List<Task> tasks = dataset.getTasks();
 		AnnotationProvider richCache = new AnnotationCache(
 				new RichAnnotationProvider());
-		AnnotationProvider slimCache = new AnnotationCache(
-				new SlimAnnotationProvider());
 		
 		TfIdfProvider tfIdfProvider = TfIdfProvider.of(richCache, dataset);
 		FeatureWeightRegression regression = new FeatureWeightRegression(

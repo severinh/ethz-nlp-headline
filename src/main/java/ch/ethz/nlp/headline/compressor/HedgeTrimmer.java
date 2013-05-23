@@ -1,12 +1,8 @@
 package ch.ethz.nlp.headline.compressor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
-
 import com.google.common.collect.ImmutableSet;
 
 import edu.stanford.nlp.ling.CoreLabel;
@@ -85,54 +81,6 @@ public class HedgeTrimmer extends TreeCompressor {
 				if (TRIMMED_LEMMAS.contains(lemma)) {
 					return false;
 				}
-				return true;
-			}
-
-		});
-
-		tree = tree.prune(new Filter<Tree>() {
-
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean accept(Tree tree) {
-				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
-				// time expression
-				if (tree.value().equals("PP")) {
-					// Only allow at most 3 leaves to be removed. Otherwise,
-					// large parts of the sentence might be trimmed by accident.
-					if (tree.getLeaves().size() <= 3) {
-						Stack<Tree> treeStack = new Stack<>();
-						treeStack.addAll(Arrays.asList(tree.children()));
-						while (!treeStack.isEmpty()) {
-							Tree child = treeStack.pop();
-							if (!child.value().equals("PP")) {
-								CoreLabel childLabel = (CoreLabel) child
-										.label();
-								String ner = childLabel.ner();
-								if (Objects.equals(ner, "DATE")) {
-									logTrimming(tree, "Date");
-									return false;
-								} else {
-									treeStack.addAll(Arrays.asList(child
-											.children()));
-								}
-							}
-						}
-					}
-				}
-				// Remove [NNP [X]] where X is a tagged as part of a
-				// time expression
-				if (tree.value().equals("NNP")) {
-					CoreLabel childLabel = (CoreLabel) tree.firstChild()
-							.label();
-					String ner = childLabel.ner();
-					if (Objects.equals(ner, "DATE")) {
-						logTrimming(tree, "Date");
-						return false;
-					}
-				}
-
 				return true;
 			}
 
