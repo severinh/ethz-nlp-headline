@@ -1,3 +1,9 @@
 #!/bin/bash
 
-mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.visualization.DocumentInspector"
+# Visualize a particular document in the data set by highlighting unigrams and
+# bigrams that occur in the corresponding models.
+#
+# Usage: Pass the ID of a document as a parameter.
+# Example: $ ./inspect-document d30044t/APW19981116.1120
+
+mvn --quiet exec:java -Dexec.mainClass="ch.ethz.nlp.headline.visualization.DocumentInspector" -Dexec.args="$@"

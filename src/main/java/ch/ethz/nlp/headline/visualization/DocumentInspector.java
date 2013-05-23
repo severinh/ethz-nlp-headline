@@ -1,11 +1,12 @@
 package ch.ethz.nlp.headline.visualization;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.ethz.nlp.headline.Config;
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Task;
@@ -24,7 +25,16 @@ public class DocumentInspector {
 	}
 
 	public static void main(String[] args) {
-		Config config = new Config();
+		if (args.length == 0) {
+			throw new IllegalArgumentException(
+					"specify at least one document id");
+		}
+
+		Set<String> selectedDocumentIds = new HashSet<>();
+		for (int i = 0; i < args.length; i++) {
+			selectedDocumentIds.add(args[i]);
+		}
+
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 		DocumentInspector inspector = new DocumentInspector();
@@ -34,12 +44,9 @@ public class DocumentInspector {
 			Document document = task.getDocument();
 			String documentId = document.getId().toString();
 
-			if (config.getFilterDocumentId().isPresent()
-					&& !documentId.equals(config.getFilterDocumentId().get())) {
-				continue;
+			if (selectedDocumentIds.contains(documentId)) {
+				inspector.inspect(task);
 			}
-
-			inspector.inspect(task);
 		}
 	}
 
