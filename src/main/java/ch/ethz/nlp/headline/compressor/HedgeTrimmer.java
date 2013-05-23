@@ -23,6 +23,9 @@ public class HedgeTrimmer extends TreeCompressor {
 	public Tree compress(Tree tree, CoreMap sentence) {
 		tree = getLowestLeftmostSWithNPVP(tree);
 		tree = removeLowContentNodes(tree);
+		if (tree == null) {
+			return null;
+		}
 		// TODO: Currently not used because it makes the performance worse
 		// tree = shortenIterativelyRule1(tree);
 		tree = shortenIterativelyRule2(tree);
@@ -160,9 +163,7 @@ public class HedgeTrimmer extends TreeCompressor {
 			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(candidate);
 			fullTree = fullTree.prune(treeFilter);
 
-			for (Tree prunedTree : treeFilter.getPrunedTrees()) {
-				logTrimming(prunedTree, "Iterative Shortening Rule 1");
-			}
+			logTrimming(treeFilter, "Iterative Shortening Rule 1");
 		}
 
 		return fullTree;
