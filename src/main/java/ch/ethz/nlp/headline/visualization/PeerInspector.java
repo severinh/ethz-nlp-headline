@@ -33,7 +33,7 @@ public class PeerInspector {
 
 		for (Model model : task.getModels()) {
 			String content = model.getContent();
-			String logString = String.format("MODEL\t\t%s", content);
+			String logString = String.format("%-16s%s", "MODEL", content);
 			LOG.info(MODEL_COLOR.makeString(logString));
 		}
 
@@ -62,7 +62,7 @@ public class PeerInspector {
 				}
 			}
 
-			LOG.info(String.format("%s\t%s %s\t%s", generatorId, rouge1String,
+			LOG.info(String.format("%-8s%s %s %s", generatorId, rouge1String,
 					rouge2String, visualization));
 		}
 	}
