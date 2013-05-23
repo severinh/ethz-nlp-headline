@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableList;
 
 import edu.stanford.nlp.ling.CoreAnnotations.AfterAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -31,7 +30,7 @@ public class NGramHitVisualizer {
 	private final List<Annotation> modelAnnotations;
 	private final Set<String> modelUnigrams;
 	private final Set<String> modelBigrams;
-	private boolean showPerSentenceRecall = true;
+	private boolean showPerSentenceRecall = false;
 	private final RougeN rouge1 = new RougeN(1);
 	private final RougeN rouge2 = new RougeN(2);
 
