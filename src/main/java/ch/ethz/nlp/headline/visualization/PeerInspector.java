@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Peer;
 import ch.ethz.nlp.headline.Task;
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.util.RougeN;
 import edu.stanford.nlp.pipeline.Annotation;
 
@@ -24,11 +24,19 @@ public class PeerInspector {
 
 	private static final AnsiColor MODEL_COLOR = AnsiColor.BLUE;
 
+	private final AnnotationProvider annotationProvider;
+
+	public PeerInspector(AnnotationProvider annotationProvider) {
+		super();
+		this.annotationProvider = annotationProvider;
+	}
+
 	public void inspect(Task task, Collection<Peer> peers) throws IOException {
 		RougeN rouge1 = new RougeN(1);
 		RougeN rouge2 = new RougeN(2);
 
-		NGramHitVisualizer visualizer = NGramHitVisualizer.of(task.getModels());
+		NGramHitVisualizer visualizer = NGramHitVisualizer.of(
+				annotationProvider, task.getModels());
 		List<Annotation> modelAnnotations = visualizer.getModelAnnotations();
 
 		for (Model model : task.getModels()) {
@@ -41,7 +49,7 @@ public class PeerInspector {
 			String generatorId = peer.getGeneratorId();
 			String headline = peer.load();
 
-			Annotation annotation = getAnnotation(headline);
+			Annotation annotation = annotationProvider.getAnnotation(headline);
 			String visualization = visualizer.visualize(annotation);
 			visualization = visualization.replaceAll("\n", "");
 
@@ -65,12 +73,6 @@ public class PeerInspector {
 			LOG.info(String.format("%-8s%s %s %s", generatorId, rouge1String,
 					rouge2String, visualization));
 		}
-	}
-
-	private Annotation getAnnotation(String content) {
-		Annotation annotation = new Annotation(content);
-		CoreNLPUtil.ensureLemmaAnnotation(annotation);
-		return annotation;
 	}
 
 }

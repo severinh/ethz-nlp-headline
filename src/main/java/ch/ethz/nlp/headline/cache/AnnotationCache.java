@@ -11,37 +11,31 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalStructure;
 import edu.stanford.nlp.trees.LabeledScoredTreeNode;
 import edu.stanford.nlp.trees.TreeGraphNode;
-import edu.stanford.nlp.util.CoreMap;
 
 public class AnnotationCache implements AnnotationProvider {
 
-	private static final String DEFAULT_ROOT = "cache";
-	private static final int DEFAULT_NUM_PARSED_SENTENCES = 1;
+	private static final String DEFAULT_ROOT_PREFIX = "cache_";
+
+	private final AnnotationProvider annotationProvider;
 
 	private final Path rootFolder;
-	private final int numParsedSentences;
 	private final MessageDigest messageDigest;
 	private final Kryo kryo;
 
-	public AnnotationCache(Path rootFolder, int numParsedSentences) {
+	public AnnotationCache(AnnotationProvider annotationProvider,
+			Path rootFolder) {
 		super();
+		this.annotationProvider = annotationProvider;
 		this.rootFolder = rootFolder;
-		this.numParsedSentences = numParsedSentences;
 
 		rootFolder.toFile().mkdirs();
 
@@ -65,9 +59,9 @@ public class AnnotationCache implements AnnotationProvider {
 						EnglishGrammaticalStructure.class));
 	}
 
-	public AnnotationCache() {
-		this(FileSystems.getDefault().getPath(DEFAULT_ROOT),
-				DEFAULT_NUM_PARSED_SENTENCES);
+	public AnnotationCache(AnnotationProvider annotationProvider) {
+		this(annotationProvider, FileSystems.getDefault().getPath(
+				DEFAULT_ROOT_PREFIX + annotationProvider.getId()));
 	}
 
 	@Override
@@ -79,7 +73,7 @@ public class AnnotationCache implements AnnotationProvider {
 		if (cacheFilePath.toFile().exists()) {
 			annotation = loadAnnotation(cacheFilePath);
 		} else {
-			annotation = buildAnnotation(content);
+			annotation = annotationProvider.getAnnotation(content);
 			storeAnnotation(cacheFilePath, annotation);
 		}
 
@@ -100,23 +94,6 @@ public class AnnotationCache implements AnnotationProvider {
 		return annotation;
 	}
 
-	private Annotation buildAnnotation(String content) {
-		Annotation annotation = new Annotation(content);
-		CoreNLPUtil.ensureLemmaAnnotation(annotation);
-		CoreNLPUtil.ensureNamedEntityTagAnnotation(annotation);
-
-		List<CoreMap> sentences = annotation.get(SentencesAnnotation.class);
-		int numSentences = Math.min(numParsedSentences, sentences.size());
-		List<CoreMap> sentencesToParse = new ArrayList<>(sentences.subList(0,
-				numSentences));
-
-		Annotation annotationToParse = CoreNLPUtil
-				.sentencesToAnnotation(sentencesToParse);
-		CoreNLPUtil.ensureTreeAnnotation(annotationToParse);
-
-		return annotation;
-	}
-
 	private void storeAnnotation(Path cacheFilePath, Annotation annotation) {
 		File cacheFile = cacheFilePath.toFile();
 		try (FileOutputStream fileOut = new FileOutputStream(cacheFile)) {
@@ -134,6 +111,11 @@ public class AnnotationCache implements AnnotationProvider {
 		byte[] bytes = content.getBytes(Charset.forName("UTF-8"));
 		messageDigest.update(bytes, 0, content.length());
 		return new BigInteger(1, messageDigest.digest()).toString(16);
+	}
+
+	@Override
+	public String getId() {
+		return "cache_" + annotationProvider.getId();
 	}
 
 }

@@ -6,4 +6,6 @@ public interface AnnotationProvider {
 
 	public Annotation getAnnotation(String content);
 
+	public String getId();
+
 }

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
 
@@ -46,10 +47,12 @@ public class NGramHitVisualizer {
 		}
 	}
 
-	public static NGramHitVisualizer of(List<Model> models) {
+	public static NGramHitVisualizer of(AnnotationProvider annotationProvider,
+			List<Model> models) {
 		List<Annotation> modelAnnotations = new ArrayList<>();
 		for (Model model : models) {
-			modelAnnotations.add(new Annotation(model.getContent()));
+			String content = model.getContent();
+			modelAnnotations.add(annotationProvider.getAnnotation(content));
 		}
 		NGramHitVisualizer visualizer = new NGramHitVisualizer(modelAnnotations);
 		return visualizer;
@@ -67,12 +70,14 @@ public class NGramHitVisualizer {
 		for (CoreMap sentence : candidate.get(SentencesAnnotation.class)) {
 			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
 			StringBuilder sentenceBuilder = new StringBuilder();
-			
+
 			if (isShowPerSentenceRecall()) {
 				Annotation sentenceAnnotation = CoreNLPUtil
 						.sentencesToAnnotation(ImmutableList.of(sentence));
-				double rouge1Recall = rouge1.compute(modelAnnotations, sentenceAnnotation);
-				double rouge2Recall = rouge2.compute(modelAnnotations, sentenceAnnotation);
+				double rouge1Recall = rouge1.compute(modelAnnotations,
+						sentenceAnnotation);
+				double rouge2Recall = rouge2.compute(modelAnnotations,
+						sentenceAnnotation);
 				String rouge1String = String.format("%.2f", rouge1Recall)
 						.substring(1);
 				String rouge2String = String.format("%.2f", rouge2Recall)
@@ -82,7 +87,7 @@ public class NGramHitVisualizer {
 				builder.append(AnsiColor.BLUE.makeString(rouge2String));
 				builder.append("\n");
 			}
-			
+
 			for (int i = 0; i < labels.size(); i++) {
 				boolean isInModelUnigram = false;
 				boolean isInModelBigram = false;
@@ -123,8 +128,9 @@ public class NGramHitVisualizer {
 				sentenceBuilder.append(word);
 				sentenceBuilder.append(after);
 			}
-			
-			builder.append(WordUtils.wrap(sentenceBuilder.toString(), SENTENCE_WRAP_WIDTH));
+
+			builder.append(WordUtils.wrap(sentenceBuilder.toString(),
+					SENTENCE_WRAP_WIDTH));
 
 			builder.append("\n\n");
 		}

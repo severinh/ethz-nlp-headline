@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
+import ch.ethz.nlp.headline.cache.RichAnnotationProvider;
+import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
@@ -33,17 +35,22 @@ public class Main {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
 
-		AnnotationProvider cache = new AnnotationCache();
-		TfIdfProvider tfIdfProvider = TfIdfProvider.of(cache, dataset);
+		AnnotationProvider richCache = new AnnotationCache(
+				new RichAnnotationProvider());
+		AnnotationProvider slimCache = new AnnotationCache(
+				new SlimAnnotationProvider());
+
+		TfIdfProvider tfIdfProvider = TfIdfProvider.of(richCache, dataset);
 
 		List<CoreNLPGenerator> generators = new ArrayList<>();
-		generators.add(new BaselineGenerator(cache));
+		generators.add(new BaselineGenerator(richCache));
 		// generators.add(new PosFilteredGenerator());
 		// generators.add(new CombinedSentenceGenerator(tfIdfProvider));
-		generators.add(new HedgeTrimmerGenerator(cache, tfIdfProvider));
+		generators.add(new HedgeTrimmerGenerator(richCache, tfIdfProvider));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
-		PeerInspector peerInspector = new PeerInspector();
+
+		PeerInspector peerInspector = new PeerInspector(slimCache);
 
 		for (int i = 0; i < tasks.size(); i++) {
 			Task task = tasks.get(i);
