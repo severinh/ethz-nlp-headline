@@ -5,13 +5,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.text.WordUtils;
 
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
+import ch.ethz.nlp.headline.util.RougeN;
+
+import com.google.common.collect.ImmutableList;
+
 import edu.stanford.nlp.ling.CoreAnnotations.AfterAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -19,12 +24,16 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class NGramHitVisualizer {
 
+	private static final int SENTENCE_WRAP_WIDTH = 80;
 	private static final AnsiColor UNIGRAM_HIT_COLOR = AnsiColor.YELLOW;
 	private static final AnsiColor BIGRAM_HIT_COLOR = AnsiColor.GREEN;
 
 	private final List<Annotation> modelAnnotations;
 	private final Set<String> modelUnigrams;
 	private final Set<String> modelBigrams;
+	private boolean showPerSentenceRecall = true;
+	private final RougeN rouge1 = new RougeN(1);
+	private final RougeN rouge2 = new RougeN(2);
 
 	public NGramHitVisualizer(List<Annotation> modelAnnotations) {
 		this.modelAnnotations = ImmutableList.copyOf(modelAnnotations);
@@ -58,7 +67,23 @@ public class NGramHitVisualizer {
 
 		for (CoreMap sentence : candidate.get(SentencesAnnotation.class)) {
 			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
-
+			StringBuilder sentenceBuilder = new StringBuilder();
+			
+			if (isShowPerSentenceRecall()) {
+				Annotation sentenceAnnotation = CoreNLPUtil
+						.sentencesToAnnotation(ImmutableList.of(sentence));
+				double rouge1Recall = rouge1.compute(modelAnnotations, sentenceAnnotation);
+				double rouge2Recall = rouge2.compute(modelAnnotations, sentenceAnnotation);
+				String rouge1String = String.format("%.2f", rouge1Recall)
+						.substring(1);
+				String rouge2String = String.format("%.2f", rouge2Recall)
+						.substring(1);
+				builder.append(AnsiColor.BLUE.makeString(rouge1String));
+				builder.append(" / ");
+				builder.append(AnsiColor.BLUE.makeString(rouge2String));
+				builder.append("\n");
+			}
+			
 			for (int i = 0; i < labels.size(); i++) {
 				boolean isInModelUnigram = false;
 				boolean isInModelBigram = false;
@@ -96,11 +121,13 @@ public class NGramHitVisualizer {
 
 				String after = label.get(AfterAnnotation.class);
 				after = after.replaceAll("\n", "");
-				builder.append(word);
-				builder.append(after);
+				sentenceBuilder.append(word);
+				sentenceBuilder.append(after);
 			}
+			
+			builder.append(WordUtils.wrap(sentenceBuilder.toString(), SENTENCE_WRAP_WIDTH));
 
-			builder.append("\n");
+			builder.append("\n\n");
 		}
 
 		return builder.toString();
@@ -108,6 +135,14 @@ public class NGramHitVisualizer {
 
 	public String visualize(Document document) {
 		return visualize(new Annotation(document.getContent()));
+	}
+
+	public boolean isShowPerSentenceRecall() {
+		return showPerSentenceRecall;
+	}
+
+	public void setShowPerSentenceRecall(boolean showPerSentenceRecall) {
+		this.showPerSentenceRecall = showPerSentenceRecall;
 	}
 
 }

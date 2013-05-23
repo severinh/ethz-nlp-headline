@@ -61,8 +61,8 @@ public class Main {
 				try {
 					peer.store(headline);
 				} catch (IOException e) {
-					System.exit(-1);
 					e.printStackTrace();
+					System.exit(-1);
 				}
 				peersMap.put(task, peer);
 			}

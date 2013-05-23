@@ -1,18 +1,17 @@
 package ch.ethz.nlp.headline.visualization;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
-
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
+
+import com.google.common.collect.ImmutableSet;
 
 public class DocumentInspector {
 
@@ -21,6 +20,7 @@ public class DocumentInspector {
 
 	public void inspect(Task task) {
 		NGramHitVisualizer visualizer = NGramHitVisualizer.of(task.getModels());
+		visualizer.setShowPerSentenceRecall(true);
 		String result = visualizer.visualize(task.getDocument());
 		String id = task.getDocument().getId().toString();
 		LOG.info(String.format("Inspecting document %s\n%s", id, result));

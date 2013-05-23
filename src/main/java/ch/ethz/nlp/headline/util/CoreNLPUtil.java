@@ -176,6 +176,7 @@ public final class CoreNLPUtil {
 	}
 
 	public static Set<String> getNGrams(Annotation annotation, int n) {
+		ensureTokensAnnotation(annotation);
 		Set<String> result = new HashSet<>();
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
