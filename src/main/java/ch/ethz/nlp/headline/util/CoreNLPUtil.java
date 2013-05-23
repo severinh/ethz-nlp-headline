@@ -4,14 +4,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.NamedEntityAnnotation;
 import edu.stanford.nlp.ie.NERClassifierCombiner;
-import edu.stanford.nlp.ie.regexp.NumberSequenceClassifier;
+import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -27,9 +28,13 @@ import edu.stanford.nlp.pipeline.NERCombinerAnnotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
 import edu.stanford.nlp.pipeline.ParserAnnotator;
+import edu.stanford.nlp.pipeline.ParserAnnotatorUtils;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
+import edu.stanford.nlp.trees.semgraph.SemanticGraph;
+import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
@@ -79,7 +84,10 @@ public final class CoreNLPUtil {
 
 	public static Annotator getParser() {
 		if (PARSER_INSTANCE == null) {
-			PARSER_INSTANCE = new ParserAnnotator(false, Integer.MAX_VALUE);
+			Properties properties = new Properties();
+			properties
+					.setProperty("parse.buildgraphs", Boolean.toString(false));
+			PARSER_INSTANCE = new ParserAnnotator("parse", properties);
 		}
 		return PARSER_INSTANCE;
 	}
@@ -91,8 +99,10 @@ public final class CoreNLPUtil {
 					DefaultPaths.DEFAULT_NER_MUC_MODEL,
 					DefaultPaths.DEFAULT_NER_CONLL_MODEL };
 			NERClassifierCombiner nerCombiner = null;
-			boolean applyNumericClassifiers = NERClassifierCombiner.APPLY_NUMERIC_CLASSIFIERS_DEFAULT;
-			boolean useSUTime = NumberSequenceClassifier.USE_SUTIME_DEFAULT;
+			boolean applyNumericClassifiers = true;
+			// SUTime uses objects that cannot be serialized and does not
+			// improve the performance of our date trimmer
+			boolean useSUTime = false;
 			try {
 				nerCombiner = new NERClassifierCombiner(
 						applyNumericClassifiers, useSUTime, models);
@@ -157,10 +167,25 @@ public final class CoreNLPUtil {
 	public static void ensureTreeAnnotation(Annotation annotation) {
 		ensureSentencesAnnotation(annotation);
 
-		CoreMap sentence = annotation.get(SentencesAnnotation.class).get(0);
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			if (!sentence.has(TreeAnnotation.class)) {
+				List<CoreMap> singleton = ImmutableList.of(sentence);
+				Annotation sentenceAnnotation = sentencesToAnnotation(singleton);
+				getParser().annotate(sentenceAnnotation);
+			}
+		}
+	}
 
-		if (!sentence.has(TreeAnnotation.class)) {
-			getParser().annotate(annotation);
+	public static void ensureBasicDependencyAnnotation(Annotation annotation) {
+		ensureTreeAnnotation(annotation);
+
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			if (!sentence.has(BasicDependenciesAnnotation.class)) {
+				Tree tree = sentence.get(TreeAnnotation.class);
+				SemanticGraph graph = ParserAnnotatorUtils
+						.generateUncollapsedDependencies(tree);
+				sentence.set(BasicDependenciesAnnotation.class, graph);
+			}
 		}
 	}
 
@@ -170,7 +195,7 @@ public final class CoreNLPUtil {
 		CoreMap sentence = annotation.get(SentencesAnnotation.class).get(0);
 		CoreLabel firstLabel = sentence.get(TokensAnnotation.class).get(0);
 
-		if (!firstLabel.has(NamedEntityAnnotation.class)) {
+		if (!firstLabel.has(NamedEntityTagAnnotation.class)) {
 			getNER().annotate(annotation);
 		}
 	}
