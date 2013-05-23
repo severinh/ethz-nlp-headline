@@ -16,6 +16,8 @@ import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.stanford.nlp.pipeline.Annotation;
+
 public class DocumentInspector {
 
 	private static final Logger LOG = LoggerFactory
@@ -32,7 +34,9 @@ public class DocumentInspector {
 		NGramHitVisualizer visualizer = NGramHitVisualizer.of(
 				annotationProvider, task.getModels());
 		visualizer.setShowPerSentenceRecall(true);
-		String result = visualizer.visualize(task.getDocument());
+		Annotation annotation = annotationProvider.getAnnotation(task
+				.getDocument().getContent());
+		String result = visualizer.visualize(annotation);
 		String id = task.getDocument().getId().toString();
 		LOG.info(String.format("Inspecting document %s\n%s", id, result));
 	}

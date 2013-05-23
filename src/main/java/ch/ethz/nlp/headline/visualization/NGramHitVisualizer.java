@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
@@ -136,10 +135,6 @@ public class NGramHitVisualizer {
 		}
 
 		return builder.toString();
-	}
-
-	public String visualize(Document document) {
-		return visualize(new Annotation(document.getContent()));
 	}
 
 	public boolean isShowPerSentenceRecall() {
