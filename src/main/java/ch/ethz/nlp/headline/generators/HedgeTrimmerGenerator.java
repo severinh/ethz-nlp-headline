@@ -10,7 +10,7 @@ import ch.ethz.nlp.headline.compressor.SentencesCompressor;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.selection.SentencesSelector;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
-import ch.ethz.nlp.headline.selection.TfIdfSentencesSelector;
+import ch.ethz.nlp.headline.selection.ScoredSentencesSelector;
 import ch.ethz.nlp.headline.util.GentleAnnotationStringBuilder;
 import edu.stanford.nlp.pipeline.Annotation;
 
@@ -23,7 +23,7 @@ public class HedgeTrimmerGenerator extends CoreNLPGenerator {
 		super(CombinedPreprocessor.all(),
 				GentleAnnotationStringBuilder.INSTANCE);
 
-		this.sentencesSelector = new TfIdfSentencesSelector(tfIdfProvider);
+		this.sentencesSelector = new ScoredSentencesSelector(tfIdfProvider);
 		this.sentencesCompressor = new CombinedCompressor(ImmutableList.of(
 				new PersonNameCompressor(), new AppositivePruner(),
 				new HedgeTrimmer()));
