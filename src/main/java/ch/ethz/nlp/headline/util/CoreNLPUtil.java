@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.NamedEntityAnnotation;
 import edu.stanford.nlp.ie.NERClassifierCombiner;
 import edu.stanford.nlp.ie.regexp.NumberSequenceClassifier;
+import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -197,7 +198,7 @@ public final class CoreNLPUtil {
 		CoreMap sentence = annotation.get(SentencesAnnotation.class).get(0);
 		CoreLabel firstLabel = sentence.get(TokensAnnotation.class).get(0);
 
-		if (!firstLabel.has(NamedEntityAnnotation.class)) {
+		if (!firstLabel.has(NamedEntityTagAnnotation.class)) {
 			getNER().annotate(annotation);
 		}
 	}
