@@ -3,6 +3,9 @@ package ch.ethz.nlp.headline.learning;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.function.Abs;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,12 +108,19 @@ public class FeatureWeightRegression {
 			X[i] = x;
 		}
 		
+		
+		int sampleSize = rougeValues.size();
+		int features = X[0].length;
 		LOG.info(String.format("Least squares system with %d sentences (rows) and %d features (columns)",
-				y.length, X[0].length));
+				sampleSize, features));
 		
 		OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
 		regression.newSampleData(y, X);
 		double[] weights = regression.estimateRegressionParameters();
+		ArrayRealVector residuals = new ArrayRealVector(regression.estimateResiduals()).mapToSelf(new Abs());
+		int degreesOfFreedom = features;
+		double error = residuals.getNorm() / Math.sqrt(sampleSize - degreesOfFreedom);
+		LOG.info("Mean error: " + error);
 
 		StringBuilder sb = new StringBuilder();
 		List<String> featureNames = featureValues.get(0).getNames();
