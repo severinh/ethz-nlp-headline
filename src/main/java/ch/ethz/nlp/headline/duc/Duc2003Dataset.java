@@ -31,6 +31,7 @@ public class Duc2003Dataset extends DucDataset {
 	protected String getDocumentContent(Path documentPath) throws IOException {
 		String content = super.getDocumentContent(documentPath);
 		content = content.replaceAll("</?P>", "");
+		content = content.replaceAll("</?ANNOTATION>", "");
 		content = content.replaceAll("\\s+", " ");
 		return content.trim();
 	}
