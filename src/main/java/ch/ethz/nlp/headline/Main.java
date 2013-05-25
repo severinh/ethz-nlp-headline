@@ -13,7 +13,7 @@ import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.cache.RichAnnotationProvider;
 import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
-import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
+import ch.ethz.nlp.headline.duc.Duc2004Dataset;
 import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
