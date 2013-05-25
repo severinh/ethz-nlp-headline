@@ -7,16 +7,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableList;
-
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
 import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
+import ch.ethz.nlp.headline.cache.AnnotationCache;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
+import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
+import ch.ethz.nlp.headline.selection.BestSentenceSelector;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
 import ch.ethz.nlp.headline.util.RougeNFactory;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencePositionAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -28,10 +31,13 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class BestSentencePosDistribution {
 
+	private final AnnotationProvider annotationProvider;
 	private final RougeNFactory rougeFactory;
 
-	public BestSentencePosDistribution(RougeNFactory rougeFactory) {
+	public BestSentencePosDistribution(AnnotationProvider annotationProvider,
+			RougeNFactory rougeFactory) {
 		super();
+		this.annotationProvider = annotationProvider;
 		this.rougeFactory = rougeFactory;
 	}
 
@@ -69,6 +75,7 @@ public class BestSentencePosDistribution {
 	public int getBestSentencePos(Task task) {
 		Document document = task.getDocument();
 		String documentContent = document.getContent();
+		Annotation documentAnnotation = getAnnotation(documentContent);
 
 		List<Annotation> models = new ArrayList<>();
 		for (Model model : task.getModels()) {
@@ -77,32 +84,16 @@ public class BestSentencePosDistribution {
 		}
 
 		RougeN rouge = rougeFactory.make(models);
+		BestSentenceSelector sentenceSelector = new BestSentenceSelector(rouge);
+		Annotation bestAnnotation = sentenceSelector.select(documentAnnotation);
+		CoreMap sentence = bestAnnotation.get(SentencesAnnotation.class).get(0);
+		String bestPos = sentence.get(SentencePositionAnnotation.class);
 
-		Annotation documentAnnotation = getAnnotation(documentContent);
-		List<CoreMap> sentences = documentAnnotation
-				.get(SentencesAnnotation.class);
-
-		int bestPos = 0;
-		double bestRecall = 0.0;
-
-		for (int pos = 0; pos < sentences.size(); pos++) {
-			CoreMap sentence = sentences.get(pos);
-			Annotation sentenceAnnotation = CoreNLPUtil
-					.sentencesToAnnotation(ImmutableList.of(sentence));
-
-			double recall = rouge.compute(sentenceAnnotation);
-
-			if (recall > bestRecall) {
-				bestPos = pos;
-				bestRecall = recall;
-			}
-		}
-
-		return bestPos;
+		return Integer.valueOf(bestPos);
 	}
 
 	private Annotation getAnnotation(String content) {
-		Annotation annotation = new Annotation(content);
+		Annotation annotation = annotationProvider.getAnnotation(content);
 		CoreNLPUtil.ensureLemmaAnnotation(annotation);
 		return annotation;
 	}
@@ -110,9 +101,11 @@ public class BestSentencePosDistribution {
 	public static void main(String[] args) throws IOException {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
+		AnnotationProvider provider = new AnnotationCache(
+				new SlimAnnotationProvider());
 		RougeNFactory rougeFactory = new RougeNFactory(1);
 		BestSentencePosDistribution distribution = new BestSentencePosDistribution(
-				rougeFactory);
+				provider, rougeFactory);
 		distribution.compute(tasks);
 	}
 
