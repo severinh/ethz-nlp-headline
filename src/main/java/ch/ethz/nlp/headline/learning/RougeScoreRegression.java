@@ -2,9 +2,16 @@ package ch.ethz.nlp.headline.learning;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import libsvm.svm;
+import libsvm.svm_model;
+import libsvm.svm_node;
+import libsvm.svm_parameter;
+import libsvm.svm_problem;
 
 import com.google.common.io.Files;
 
@@ -16,15 +23,13 @@ import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.cache.RichAnnotationProvider;
 import ch.ethz.nlp.headline.duc.Duc2003Dataset;
 import ch.ethz.nlp.headline.duc.Duc2004Dataset;
+import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
+import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
 import ch.ethz.nlp.headline.selection.BestSentenceSelector;
 import ch.ethz.nlp.headline.selection.SentencesSelector;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
 import ch.ethz.nlp.headline.util.RougeNFactory;
-import edu.berkeley.compbio.jlibsvm.legacyexec.svm_predict;
-import edu.berkeley.compbio.jlibsvm.legacyexec.svm_train;
-import edu.berkeley.compbio.jlibsvm.regression.MutableRegressionProblemImpl;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -35,20 +40,21 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class RougeScoreRegression {
 
-	private static final GrammaticalRelationIndex RELATION_INDEX;
-	private static final int NAMED_ENTITY_INDEX;
+	public static final GrammaticalRelationIndex RELATION_INDEX;
+	public static final int NAMED_ENTITY_INDEX;
 
 	static {
 		RELATION_INDEX = GrammaticalRelationIndex.makeDefault();
 		NAMED_ENTITY_INDEX = 1;
 	}
 
-	private static final int getRelationIndex(GrammaticalRelation relation) {
+	public static final int getRelationIndex(GrammaticalRelation relation) {
 		return RELATION_INDEX.getIndex(relation) + 2;
 	}
 
 	private final AnnotationProvider annotationProvider;
 	private final RougeNFactory rougeFactory;
+	private final ContentPreprocessor preprocessor = CombinedPreprocessor.all();
 
 	public RougeScoreRegression(AnnotationProvider annotationProvider) {
 		super();
@@ -56,8 +62,9 @@ public class RougeScoreRegression {
 		this.rougeFactory = new RougeNFactory(1);
 	}
 
-	public Problem buildProblem(List<Task> tasks) {
-		Problem problem = new Problem(10000);
+	public svm_problem buildProblem(List<Task> tasks) {
+		List<Double> labels = new ArrayList<>(15000);
+		List<svm_node[]> nodeMatrix = new ArrayList<>(15000);
 
 		for (Task task : tasks) {
 			List<Model> models = task.getModels();
@@ -65,6 +72,7 @@ public class RougeScoreRegression {
 			SentencesSelector sentenceSelector = new BestSentenceSelector(rouge);
 
 			String content = task.getDocument().getContent();
+			content = preprocessor.preprocess(content);
 			Annotation documentAnnotation = annotationProvider
 					.getAnnotation(content);
 			Annotation bestAnnotation = sentenceSelector
@@ -88,16 +96,29 @@ public class RougeScoreRegression {
 					}
 					boolean isNamedEntity = !Objects.equals(word.ner(), "O");
 
-					SparseVector vector = new SparseVector(2);
-					vector.indexes[0] = NAMED_ENTITY_INDEX;
-					vector.values[0] = (isNamedEntity) ? 1.0f : 0.0f;
+					svm_node[] nodes = new svm_node[2];
 
-					vector.indexes[1] = getRelationIndex(relation);
-					vector.values[1] = 1.0f;
+					nodes[0] = new svm_node();
+					nodes[0].index = NAMED_ENTITY_INDEX;
+					nodes[0].value = (isNamedEntity) ? 1.0f : 0.0f;
 
-					problem.addExample(vector, (float) recall);
+					nodes[1] = new svm_node();
+					nodes[1].index = getRelationIndex(relation);
+					nodes[1].value = 1.0f;
+
+					nodeMatrix.add(nodes);
+					labels.add(recall);
 				}
 			}
+		}
+
+		svm_problem problem = new svm_problem();
+		problem.l = labels.size();
+		problem.y = new double[problem.l];
+		problem.x = new svm_node[problem.l][];
+		for (int i = 0; i < problem.l; i++) {
+			problem.y[i] = labels.get(i);
+			problem.x[i] = nodeMatrix.get(i);
 		}
 
 		return problem;
@@ -109,36 +130,42 @@ public class RougeScoreRegression {
 		RougeScoreRegression regression = new RougeScoreRegression(cache);
 
 		Dataset trainDataset = Duc2003Dataset.ofDefaultRoot();
-		Problem trainProblem = regression.buildProblem(trainDataset.getTasks());
+		svm_problem trainProblem = regression.buildProblem(trainDataset
+				.getTasks());
 		File trainProblemFile = new File("rouge.train");
-		Files.write(RegressionProblemWriter.toString(trainProblem).getBytes(),
+		Files.write(SVMProblemWriter.toString(trainProblem).getBytes(),
 				trainProblemFile);
 
 		Dataset testDataset = Duc2004Dataset.ofDefaultRoot();
-		Problem testProblem = regression.buildProblem(testDataset.getTasks());
+		svm_problem testProblem = regression.buildProblem(testDataset
+				.getTasks());
 		File testProblemFile = new File("rouge.test");
-		Files.write(RegressionProblemWriter.toString(testProblem).getBytes(),
+		Files.write(SVMProblemWriter.toString(testProblem).getBytes(),
 				testProblemFile);
 
 		File modelFile = new File("rouge.model");
-		File outputFile = new File("rouge.out");
 
-		svm_train.main(new String[] { "-s", "3", trainProblemFile.getName(),
-				modelFile.getName() });
-		svm_predict.main(new String[] { testProblemFile.getName(),
-				modelFile.getName(), outputFile.getName() });
-	}
+		svm_parameter parameter = new svm_parameter();
 
-	/**
-	 * Make the code easier to read.
-	 */
-	private static class Problem extends
-			MutableRegressionProblemImpl<SparseVector> {
+		// Default values
+		parameter.svm_type = svm_parameter.EPSILON_SVR;
+		parameter.kernel_type = svm_parameter.RBF;
+		parameter.degree = 3;
+		parameter.gamma = 0.25;
+		parameter.coef0 = 0;
+		parameter.nu = 0.5;
+		parameter.cache_size = 40;
+		parameter.C = 1;
+		parameter.eps = 1e-3;
+		parameter.p = 0.1;
+		parameter.shrinking = 1;
+		parameter.probability = 0;
+		parameter.nr_weight = 0;
+		parameter.weight_label = new int[0];
+		parameter.weight = new double[0];
 
-		public Problem(int numExamples) {
-			super(numExamples);
-		}
-
+		svm_model model = svm.svm_train(trainProblem, parameter);
+		svm.svm_save_model(modelFile.getName(), model);
 	}
 
 }
