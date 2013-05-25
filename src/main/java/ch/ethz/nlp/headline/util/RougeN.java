@@ -18,12 +18,15 @@ import edu.stanford.nlp.pipeline.Annotation;
  */
 public class RougeN {
 
+	private final List<Annotation> references;
 	private final int n;
 
-	public RougeN(int n) {
+	public RougeN(List<Annotation> references, int n) {
 		super();
 
 		checkArgument(n > 0);
+
+		this.references = references;
 		this.n = n;
 	}
 
@@ -37,7 +40,7 @@ public class RougeN {
 	 *            candidate summary
 	 * @return the recall
 	 */
-	public double compute(List<Annotation> references, Annotation candidate) {
+	public double compute(Annotation candidate) {
 		double numerator = 0.0;
 		double denominator = 0.0;
 		Set<String> candidateNGrams = CoreNLPUtil.getNGrams(candidate, n);

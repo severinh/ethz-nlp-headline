@@ -16,6 +16,7 @@ import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
+import ch.ethz.nlp.headline.util.RougeNFactory;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -27,11 +28,11 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class BestSentencePosDistribution {
 
-	private final RougeN rouge;
+	private final RougeNFactory rougeFactory;
 
-	public BestSentencePosDistribution(RougeN rouge) {
+	public BestSentencePosDistribution(RougeNFactory rougeFactory) {
 		super();
-		this.rouge = rouge;
+		this.rougeFactory = rougeFactory;
 	}
 
 	public void compute(List<Task> tasks) throws IOException {
@@ -75,6 +76,8 @@ public class BestSentencePosDistribution {
 			models.add(getAnnotation(modelContent));
 		}
 
+		RougeN rouge = rougeFactory.make(models);
+
 		Annotation documentAnnotation = getAnnotation(documentContent);
 		List<CoreMap> sentences = documentAnnotation
 				.get(SentencesAnnotation.class);
@@ -87,7 +90,7 @@ public class BestSentencePosDistribution {
 			Annotation sentenceAnnotation = CoreNLPUtil
 					.sentencesToAnnotation(ImmutableList.of(sentence));
 
-			double recall = rouge.compute(models, sentenceAnnotation);
+			double recall = rouge.compute(sentenceAnnotation);
 
 			if (recall > bestRecall) {
 				bestPos = pos;
@@ -107,9 +110,9 @@ public class BestSentencePosDistribution {
 	public static void main(String[] args) throws IOException {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
-		RougeN rouge = new RougeN(1);
+		RougeNFactory rougeFactory = new RougeNFactory(1);
 		BestSentencePosDistribution distribution = new BestSentencePosDistribution(
-				rouge);
+				rougeFactory);
 		distribution.compute(tasks);
 	}
 

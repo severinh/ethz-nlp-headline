@@ -22,6 +22,7 @@ import ch.ethz.nlp.headline.selection.SentenceScore;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
+import ch.ethz.nlp.headline.util.RougeNFactory;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,13 +36,14 @@ public class FeatureWeightRegression {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(FeatureWeightRegression.class);
 
-	private final RougeN rouge = new RougeN(1);
+	private final RougeNFactory rougeFactory = new RougeNFactory(1);
 	private final TfIdfProvider tfIdfProvider;
 	private final AnnotationProvider annotationProvider;
 
 	private final ContentPreprocessor preprocessor;
 
-	public FeatureWeightRegression(AnnotationProvider annotationProvider, TfIdfProvider tfIdfProvider) {
+	public FeatureWeightRegression(AnnotationProvider annotationProvider,
+			TfIdfProvider tfIdfProvider) {
 		this.tfIdfProvider = tfIdfProvider;
 		this.preprocessor = CombinedPreprocessor.all();
 		this.annotationProvider = annotationProvider;
@@ -53,7 +55,7 @@ public class FeatureWeightRegression {
 		List<SentenceScore> featureValues = new ArrayList<>();
 		// for every sentence, we keep its ROUGE-1 recall
 		List<Double> rougeValues = new ArrayList<>();
-		
+
 		for (Task task : tasks) {
 			Document document = task.getDocument();
 			String documentContent = document.getContent();
@@ -65,7 +67,10 @@ public class FeatureWeightRegression {
 				models.add(annotationProvider.getAnnotation(modelContent));
 			}
 
-			Annotation documentAnnotation = annotationProvider.getAnnotation(documentContent);
+			RougeN rouge = rougeFactory.make(models);
+
+			Annotation documentAnnotation = annotationProvider
+					.getAnnotation(documentContent);
 			SentenceFeatureExtractor extractor = new SentenceFeatureExtractor(
 					tfIdfProvider, documentAnnotation);
 			List<CoreMap> sentences = documentAnnotation
@@ -76,16 +81,16 @@ public class FeatureWeightRegression {
 				Annotation sentenceAnnotation = CoreNLPUtil
 						.sentencesToAnnotation(ImmutableList.of(sentence));
 
-					double recall = rouge.compute(models, sentenceAnnotation);
-					rougeValues.add(recall);
-	
-					// calculate sentence features
-					SentenceScore features = extractor
-							.extractFeaturesForSentence(sentence);
-					featureValues.add(features);
+				double recall = rouge.compute(sentenceAnnotation);
+				rougeValues.add(recall);
+
+				// calculate sentence features
+				SentenceScore features = extractor
+						.extractFeaturesForSentence(sentence);
+				featureValues.add(features);
 			}
 		}
-		
+
 		// prepare data in double arrays...
 		Double[] ys = rougeValues.toArray(new Double[rougeValues.size()]);
 		double[] y = ArrayUtils.toPrimitive(ys);
@@ -103,10 +108,11 @@ public class FeatureWeightRegression {
 			double[] x = ArrayUtils.toPrimitive(xs);
 			X[i] = x;
 		}
-		
-		LOG.info(String.format("Least squares system with %d sentences (rows) and %d features (columns)",
-				y.length, X[0].length));
-		
+
+		LOG.info(String
+				.format("Least squares system with %d sentences (rows) and %d features (columns)",
+						y.length, X[0].length));
+
 		OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
 		regression.newSampleData(y, X);
 		double[] weights = regression.estimateRegressionParameters();
@@ -116,11 +122,11 @@ public class FeatureWeightRegression {
 		for (int fi = 0; fi < featureNames.size(); fi++) {
 			sb.append(featureNames.get(fi));
 			sb.append(" = ");
-			sb.append(weights[fi+1]); // skip "offset"
+			sb.append(weights[fi + 1]); // skip "offset"
 			sb.append("\n");
 		}
 		LOG.info("Determined weights:\n " + sb.toString());
-		
+
 	}
 
 	public static void main(String[] args) {
@@ -128,7 +134,7 @@ public class FeatureWeightRegression {
 		List<Task> tasks = dataset.getTasks();
 		AnnotationProvider richCache = new AnnotationCache(
 				new RichAnnotationProvider());
-		
+
 		TfIdfProvider tfIdfProvider = TfIdfProvider.of(richCache, dataset);
 		FeatureWeightRegression regression = new FeatureWeightRegression(
 				richCache, tfIdfProvider);

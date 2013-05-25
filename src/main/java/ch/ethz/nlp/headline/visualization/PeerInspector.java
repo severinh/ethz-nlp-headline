@@ -32,9 +32,6 @@ public class PeerInspector {
 	}
 
 	public void inspect(Task task, Collection<Peer> peers) throws IOException {
-		RougeN rouge1 = new RougeN(1);
-		RougeN rouge2 = new RougeN(2);
-
 		NGramHitVisualizer visualizer = NGramHitVisualizer.of(
 				annotationProvider, task.getModels());
 		List<Annotation> modelAnnotations = visualizer.getModelAnnotations();
@@ -44,6 +41,9 @@ public class PeerInspector {
 			String logString = String.format("%-16s%s", "MODEL", content);
 			LOG.info(MODEL_COLOR.makeString(logString));
 		}
+		
+		RougeN rouge1 = new RougeN(modelAnnotations, 1);
+		RougeN rouge2 = new RougeN(modelAnnotations, 2);
 
 		for (Peer peer : peers) {
 			String generatorId = peer.getGeneratorId();
@@ -53,8 +53,8 @@ public class PeerInspector {
 			String visualization = visualizer.visualize(annotation);
 			visualization = visualization.replaceAll("\n", " ");
 
-			double rouge1Recall = rouge1.compute(modelAnnotations, annotation);
-			double rouge2Recall = rouge2.compute(modelAnnotations, annotation);
+			double rouge1Recall = rouge1.compute(annotation);
+			double rouge2Recall = rouge2.compute(annotation);
 			String rouge1String = String.format("%.2f", rouge1Recall)
 					.substring(1);
 			String rouge2String = String.format("%.2f", rouge2Recall)
