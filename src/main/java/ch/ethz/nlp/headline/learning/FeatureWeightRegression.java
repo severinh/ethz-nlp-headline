@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
@@ -61,14 +60,8 @@ public class FeatureWeightRegression {
 			String documentContent = document.getContent();
 			documentContent = preprocessor.preprocess(documentContent);
 
-			List<Annotation> models = new ArrayList<>();
-			for (Model model : task.getModels()) {
-				String modelContent = model.getContent();
-				models.add(annotationProvider.getAnnotation(modelContent));
-			}
-
-			RougeN rouge = rougeFactory.make(models);
-
+			RougeN rouge = rougeFactory.make(task.getModels(),
+					annotationProvider);
 			Annotation documentAnnotation = annotationProvider
 					.getAnnotation(documentContent);
 			SentenceFeatureExtractor extractor = new SentenceFeatureExtractor(

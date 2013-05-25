@@ -9,7 +9,6 @@ import java.util.Map;
 
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
@@ -77,13 +76,7 @@ public class BestSentencePosDistribution {
 		String documentContent = document.getContent();
 		Annotation documentAnnotation = getAnnotation(documentContent);
 
-		List<Annotation> models = new ArrayList<>();
-		for (Model model : task.getModels()) {
-			String modelContent = model.getContent();
-			models.add(getAnnotation(modelContent));
-		}
-
-		RougeN rouge = rougeFactory.make(models);
+		RougeN rouge = rougeFactory.make(task.getModels(), annotationProvider);
 		BestSentenceSelector sentenceSelector = new BestSentenceSelector(rouge);
 		Annotation bestAnnotation = sentenceSelector.select(documentAnnotation);
 		CoreMap sentence = bestAnnotation.get(SentencesAnnotation.class).get(0);
