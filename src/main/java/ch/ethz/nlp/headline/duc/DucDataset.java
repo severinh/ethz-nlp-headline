@@ -35,6 +35,15 @@ public abstract class DucDataset extends Dataset {
 		this.documentRoot = documentRoot;
 		this.modelRoot = modelRoot;
 		this.peerRoot = peerRoot;
+
+		try {
+			Files.createDirectories(documentRoot);
+			Files.createDirectories(modelRoot);
+			Files.createDirectories(peerRoot);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
 
 	@Override
