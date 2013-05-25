@@ -90,6 +90,11 @@ public class RougeScoreRegression {
 				Set<GrammaticalRelation> relations = graph.relns(word);
 				if (!relations.isEmpty()) {
 					GrammaticalRelation relation = relations.iterator().next();
+					// For some reason, collapsed dependencies such as 'prep_in'
+					// are not in the index yet
+					if (!RELATION_INDEX.contains(relation)) {
+						continue;
+					}
 					double recall = rouge.compute(word);
 					if (recall > 0.0) {
 						recall = 1.0;

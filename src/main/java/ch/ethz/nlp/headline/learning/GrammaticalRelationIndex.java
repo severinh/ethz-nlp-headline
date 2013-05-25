@@ -32,6 +32,10 @@ public class GrammaticalRelationIndex {
 		return map.get(relation);
 	}
 
+	public boolean contains(GrammaticalRelation relation) {
+		return map.containsKey(relation);
+	}
+
 	public static GrammaticalRelationIndex makeDefault() {
 		List<GrammaticalRelation> relations = EnglishGrammaticalRelations
 				.values();
