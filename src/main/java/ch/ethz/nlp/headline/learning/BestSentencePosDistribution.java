@@ -15,7 +15,6 @@ import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
 import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
 import ch.ethz.nlp.headline.selection.BestSentenceSelector;
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
 import ch.ethz.nlp.headline.util.RougeNFactory;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencePositionAnnotation;
@@ -73,8 +72,8 @@ public class BestSentencePosDistribution {
 	 */
 	public int getBestSentencePos(Task task) {
 		Document document = task.getDocument();
-		String documentContent = document.getContent();
-		Annotation documentAnnotation = getAnnotation(documentContent);
+		Annotation documentAnnotation = annotationProvider
+				.getAnnotation(document.getContent());
 
 		RougeN rouge = rougeFactory.make(task.getModels(), annotationProvider);
 		BestSentenceSelector sentenceSelector = new BestSentenceSelector(rouge);
@@ -83,12 +82,6 @@ public class BestSentencePosDistribution {
 		String bestPos = sentence.get(SentencePositionAnnotation.class);
 
 		return Integer.valueOf(bestPos);
-	}
-
-	private Annotation getAnnotation(String content) {
-		Annotation annotation = annotationProvider.getAnnotation(content);
-		CoreNLPUtil.ensureLemmaAnnotation(annotation);
-		return annotation;
 	}
 
 	public static void main(String[] args) throws IOException {
