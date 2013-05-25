@@ -14,6 +14,8 @@ public class Duc2003Dataset extends DucDataset {
 
 	private static final String ROOT = "duc2003";
 
+	// The document in the back-list consists of a single sentence (an
+	// enumeration), causing an OutOfMemoryError in the CoreNLP parser.
 	private static final Set<String> DOCUMENT_BLACKLIST = ImmutableSet
 			.of("XIE19980503.0148");
 
