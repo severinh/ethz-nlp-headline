@@ -68,7 +68,10 @@ public abstract class DucDataset extends Dataset {
 				try (DirectoryStream<Path> docStream = Files
 						.newDirectoryStream(documentSetPath)) {
 					for (Path documentPath : docStream) {
-						result.add(makeDocument(documentPath));
+						Optional<Document> document = makeDocument(documentPath);
+						if (document.isPresent()) {
+							result.add(document.get());
+						}
 					}
 				}
 			}
@@ -79,11 +82,13 @@ public abstract class DucDataset extends Dataset {
 		return result;
 	}
 
-	protected Document makeDocument(Path documentPath) throws IOException {
+	protected Optional<Document> makeDocument(Path documentPath)
+			throws IOException {
 		DocumentId id = getDocumentId(documentPath);
 		String content = getDocumentContent(documentPath);
 
-		return new DucDocument(documentPath, id, content);
+		return Optional
+				.<Document> of(new DucDocument(documentPath, id, content));
 	}
 
 	protected DocumentId getDocumentId(Path documentPath) {

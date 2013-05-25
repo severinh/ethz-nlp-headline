@@ -3,10 +3,19 @@ package ch.ethz.nlp.headline.duc;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.Set;
+
+import ch.ethz.nlp.headline.Document;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 
 public class Duc2003Dataset extends DucDataset {
 
 	private static final String ROOT = "duc2003";
+
+	private static final Set<String> DOCUMENT_BLACKLIST = ImmutableSet
+			.of("XIE19980503.0148");
 
 	protected Duc2003Dataset(Path documentRoot, Path modelRoot, Path peerRoot) {
 		super(documentRoot, modelRoot, peerRoot);
@@ -25,6 +34,15 @@ public class Duc2003Dataset extends DucDataset {
 		Path datasetRoot = FileSystems.getDefault().getPath(ROOT);
 
 		return ofRoot(datasetRoot);
+	}
+
+	protected Optional<Document> makeDocument(Path documentPath)
+			throws IOException {
+		String documentName = documentPath.getFileName().toString();
+		if (DOCUMENT_BLACKLIST.contains(documentName)) {
+			return Optional.absent();
+		}
+		return super.makeDocument(documentPath);
 	}
 
 	@Override
