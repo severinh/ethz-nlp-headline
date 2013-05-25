@@ -77,7 +77,13 @@
 			<artifactId>libsvm</artifactId>
 			<version>3.1</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.berkeley.compbio</groupId>
+			<artifactId>jlibsvm</artifactId>
+			<version>0.902</version>
+		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -91,4 +97,21 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>dev.davidsoergel.com releases</id>
+			<url>http://dev.davidsoergel.com/artifactory/repo</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>dev.davidsoergel.com snapshots</id>
+			<url>http://dev.davidsoergel.com/artifactory/repo</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
 </project>
