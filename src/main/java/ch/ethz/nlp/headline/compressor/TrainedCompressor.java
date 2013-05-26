@@ -7,11 +7,10 @@ import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import ch.ethz.nlp.headline.generators.Generator;
-import ch.ethz.nlp.headline.learning.RougeScoreRegression;
+import ch.ethz.nlp.headline.learning.SVMNodeBuilder;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -49,15 +48,15 @@ public class TrainedCompressor extends TreeCompressor {
 		SemanticGraph graph = sentence
 				.get(CollapsedCCProcessedDependenciesAnnotation.class);
 
+		SVMNodeBuilder nodeBuilder = SVMNodeBuilder
+				.makeDefault(graph, tfIdfMap);
+
 		PriorityQueue<IndexedWord> queue = new BinaryHeapPriorityQueue<>();
 		int estimatedLength = 0;
 		for (IndexedWord label : graph.vertexSet()) {
-			Optional<svm_node[]> nodes = RougeScoreRegression.buildNodes(graph,
-					label, tfIdfMap);
-			if (nodes.isPresent()) {
-				double prediction = svm.svm_predict(model, nodes.get());
-				queue.add(label, -prediction);
-			}
+			svm_node[] nodes = nodeBuilder.build(label);
+			double prediction = svm.svm_predict(model, nodes);
+			queue.add(label, -prediction);
 			estimatedLength += label.word().length() + 1;
 		}
 

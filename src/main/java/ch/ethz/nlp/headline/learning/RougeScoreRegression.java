@@ -3,9 +3,6 @@ package ch.ethz.nlp.headline.learning;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +10,6 @@ import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
 
-import com.google.common.base.Optional;
 import com.google.common.io.Files;
 
 import ch.ethz.nlp.headline.Dataset;
@@ -35,7 +31,6 @@ import ch.ethz.nlp.headline.util.RougeNFactory;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.semgraph.SemanticGraph;
 import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -45,20 +40,6 @@ public class RougeScoreRegression {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(RougeScoreRegression.class);
-
-	public static final GrammaticalRelationIndex RELATION_INDEX;
-	public static final int DATE_INDEX = 1;
-	public static final int PERSON_INDEX = 2;
-	public static final int LOCATION_INDEX = 3;
-	public static final int TFIDF_INDEX = 4;
-
-	static {
-		RELATION_INDEX = GrammaticalRelationIndex.makeDefault();
-	}
-
-	public static final int getRelationIndex(GrammaticalRelation relation) {
-		return RELATION_INDEX.getIndex(relation) + 5;
-	}
 
 	private final AnnotationProvider annotationProvider;
 	private final RougeNFactory rougeFactory;
@@ -104,55 +85,17 @@ public class RougeScoreRegression {
 			SemanticGraph graph = bestSentence
 					.get(CollapsedCCProcessedDependenciesAnnotation.class);
 
+			SVMNodeBuilder nodeBuilder = SVMNodeBuilder.makeDefault(graph,
+					tfIdfMap);
+
 			for (IndexedWord word : graph.vertexSet()) {
-				Optional<svm_node[]> nodes = buildNodes(graph, word, tfIdfMap);
-				if (nodes.isPresent()) {
-					double label = (rouge.contains(word)) ? 1.0 : 0.0;
-					problemBuilder.addExample(nodes.get(), label);
-				}
+				double label = (rouge.contains(word)) ? 1.0 : 0.0;
+				svm_node[] nodes = nodeBuilder.build(word);
+				problemBuilder.addExample(nodes, label);
 			}
 		}
 
 		return problemBuilder.build();
-	}
-
-	public static Optional<svm_node[]> buildNodes(SemanticGraph graph,
-			IndexedWord word, PriorityQueue<String> tfIdfMap) {
-		Set<GrammaticalRelation> relations = graph.relns(word);
-		if (!relations.isEmpty()) {
-			GrammaticalRelation relation = relations.iterator().next();
-			// For some reason, collapsed dependencies such as 'prep_in'
-			// are not in the index yet
-			if (!RELATION_INDEX.contains(relation)) {
-				return Optional.absent();
-			}
-			svm_node[] nodes = new svm_node[5];
-
-			nodes[0] = new svm_node();
-			nodes[0].index = DATE_INDEX;
-			nodes[0].value = (Objects.equals(word.ner(), "DATE")) ? 1.0f : 0.0f;
-
-			nodes[1] = new svm_node();
-			nodes[1].index = PERSON_INDEX;
-			nodes[1].value = (Objects.equals(word.ner(), "PERSON")) ? 1.0f
-					: 0.0f;
-
-			nodes[2] = new svm_node();
-			nodes[2].index = LOCATION_INDEX;
-			nodes[2].value = (Objects.equals(word.ner(), "LOCATION")) ? 1.0f
-					: 0.0f;
-
-			nodes[3] = new svm_node();
-			nodes[3].index = TFIDF_INDEX;
-			double tfIdfScore = tfIdfMap.getPriority(word.lemma());
-			nodes[3].value = Math.max(0.0, tfIdfScore);
-
-			nodes[4] = new svm_node();
-			nodes[4].index = getRelationIndex(relation);
-			nodes[4].value = 1.0f;
-			return Optional.of(nodes);
-		}
-		return Optional.absent();
 	}
 
 	public static void main(String[] args) throws IOException {
