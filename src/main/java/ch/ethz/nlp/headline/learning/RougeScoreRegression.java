@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
@@ -40,6 +43,9 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class RougeScoreRegression {
 
+	private static final Logger LOG = LoggerFactory
+			.getLogger(RougeScoreRegression.class);
+
 	public static final GrammaticalRelationIndex RELATION_INDEX;
 	public static final int NAMED_ENTITY_INDEX;
 
@@ -66,7 +72,11 @@ public class RougeScoreRegression {
 		List<Double> labels = new ArrayList<>(15000);
 		List<svm_node[]> nodeMatrix = new ArrayList<>(15000);
 
-		for (Task task : tasks) {
+		for (int i = 0; i < tasks.size(); i++) {
+			Task task = tasks.get(i);
+			LOG.info(String.format("Processing task %d of %d: %s", i + 1,
+					tasks.size(), task.getDocument().getId()));
+
 			List<Model> models = task.getModels();
 			RougeN rouge = rougeFactory.make(models, annotationProvider);
 			SentencesSelector sentenceSelector = new BestSentenceSelector(rouge);
@@ -156,11 +166,11 @@ public class RougeScoreRegression {
 		parameter.svm_type = svm_parameter.EPSILON_SVR;
 		parameter.kernel_type = svm_parameter.RBF;
 		parameter.degree = 3;
-		parameter.gamma = 0.25;
+		parameter.gamma = 0.0625;
 		parameter.coef0 = 0;
-		parameter.nu = 0.5;
+		parameter.nu = 0.125;
 		parameter.cache_size = 40;
-		parameter.C = 1;
+		parameter.C = 8;
 		parameter.eps = 1e-3;
 		parameter.p = 0.1;
 		parameter.shrinking = 1;
