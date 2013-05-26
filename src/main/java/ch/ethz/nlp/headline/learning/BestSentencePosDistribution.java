@@ -7,15 +7,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableList;
-
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
-import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
-import ch.ethz.nlp.headline.util.CoreNLPUtil;
+import ch.ethz.nlp.headline.cache.AnnotationCache;
+import ch.ethz.nlp.headline.cache.AnnotationProvider;
+import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
+import ch.ethz.nlp.headline.duc.Duc2004Dataset;
+import ch.ethz.nlp.headline.selection.BestSentenceSelector;
 import ch.ethz.nlp.headline.util.RougeN;
+import ch.ethz.nlp.headline.util.RougeNFactory;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencePositionAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -27,11 +29,14 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class BestSentencePosDistribution {
 
-	private final RougeN rouge;
+	private final AnnotationProvider annotationProvider;
+	private final RougeNFactory rougeFactory;
 
-	public BestSentencePosDistribution(RougeN rouge) {
+	public BestSentencePosDistribution(AnnotationProvider annotationProvider,
+			RougeNFactory rougeFactory) {
 		super();
-		this.rouge = rouge;
+		this.annotationProvider = annotationProvider;
+		this.rougeFactory = rougeFactory;
 	}
 
 	public void compute(List<Task> tasks) throws IOException {
@@ -67,49 +72,26 @@ public class BestSentencePosDistribution {
 	 */
 	public int getBestSentencePos(Task task) {
 		Document document = task.getDocument();
-		String documentContent = document.getContent();
+		Annotation documentAnnotation = annotationProvider
+				.getAnnotation(document.getContent());
 
-		List<Annotation> models = new ArrayList<>();
-		for (Model model : task.getModels()) {
-			String modelContent = model.getContent();
-			models.add(getAnnotation(modelContent));
-		}
+		RougeN rouge = rougeFactory.make(task.getModels(), annotationProvider);
+		BestSentenceSelector sentenceSelector = new BestSentenceSelector(rouge);
+		Annotation bestAnnotation = sentenceSelector.select(documentAnnotation);
+		CoreMap sentence = bestAnnotation.get(SentencesAnnotation.class).get(0);
+		String bestPos = sentence.get(SentencePositionAnnotation.class);
 
-		Annotation documentAnnotation = getAnnotation(documentContent);
-		List<CoreMap> sentences = documentAnnotation
-				.get(SentencesAnnotation.class);
-
-		int bestPos = 0;
-		double bestRecall = 0.0;
-
-		for (int pos = 0; pos < sentences.size(); pos++) {
-			CoreMap sentence = sentences.get(pos);
-			Annotation sentenceAnnotation = CoreNLPUtil
-					.sentencesToAnnotation(ImmutableList.of(sentence));
-
-			double recall = rouge.compute(models, sentenceAnnotation);
-
-			if (recall > bestRecall) {
-				bestPos = pos;
-				bestRecall = recall;
-			}
-		}
-
-		return bestPos;
-	}
-
-	private Annotation getAnnotation(String content) {
-		Annotation annotation = new Annotation(content);
-		CoreNLPUtil.ensureLemmaAnnotation(annotation);
-		return annotation;
+		return Integer.valueOf(bestPos);
 	}
 
 	public static void main(String[] args) throws IOException {
 		Dataset dataset = Duc2004Dataset.ofDefaultRoot();
 		List<Task> tasks = dataset.getTasks();
-		RougeN rouge = new RougeN(1);
+		AnnotationProvider provider = new AnnotationCache(
+				new SlimAnnotationProvider());
+		RougeNFactory rougeFactory = new RougeNFactory(1);
 		BestSentencePosDistribution distribution = new BestSentencePosDistribution(
-				rouge);
+				provider, rougeFactory);
 		distribution.compute(tasks);
 	}
 

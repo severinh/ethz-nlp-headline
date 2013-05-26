@@ -1,28 +1,23 @@
-package ch.ethz.nlp.headline.duc2004;
+package ch.ethz.nlp.headline.duc;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import ch.ethz.nlp.headline.DocumentId;
 import ch.ethz.nlp.headline.Peer;
 
-public class Duc2004Peer implements Peer {
+public class DucPeer implements Peer {
 
 	public final Path path;
 	public final String generatorId;
 
 	public String headline;
 
-	public Duc2004Peer(Path peerRoot, DocumentId documentId, String generatorId) {
+	public DucPeer(Path path, String generatorId) {
 		super();
 
-		String filename = documentId.getSet().toUpperCase()
-				.substring(0, documentId.getSet().length() - 1)
-				+ ".P.10.T." + generatorId + "." + documentId.getName();
-
-		this.path = peerRoot.resolve(filename);
+		this.path = path;
 		this.generatorId = generatorId;
 	}
 

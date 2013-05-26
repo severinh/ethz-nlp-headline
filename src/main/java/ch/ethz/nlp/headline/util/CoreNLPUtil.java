@@ -35,6 +35,7 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.trees.semgraph.SemanticGraph;
 import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
+import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
@@ -185,6 +186,21 @@ public final class CoreNLPUtil {
 				SemanticGraph graph = ParserAnnotatorUtils
 						.generateUncollapsedDependencies(tree);
 				sentence.set(BasicDependenciesAnnotation.class, graph);
+			}
+		}
+	}
+
+	public static void ensureCollapsedCCProcessedDependenciesAnnotation(
+			Annotation annotation) {
+		ensureTreeAnnotation(annotation);
+
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			if (!sentence.has(BasicDependenciesAnnotation.class)) {
+				Tree tree = sentence.get(TreeAnnotation.class);
+				SemanticGraph graph = ParserAnnotatorUtils
+						.generateCCProcessedDependencies(tree);
+				sentence.set(CollapsedCCProcessedDependenciesAnnotation.class,
+						graph);
 			}
 		}
 	}

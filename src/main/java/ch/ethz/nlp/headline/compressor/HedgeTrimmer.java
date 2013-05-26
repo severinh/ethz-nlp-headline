@@ -1,28 +1,19 @@
 package ch.ethz.nlp.headline.compressor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
-
 import com.google.common.collect.ImmutableSet;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.Filter;
 
 public class HedgeTrimmer extends TreeCompressor {
-
-	private static final Set<String> TRIMMED_LEMMAS = ImmutableSet.of("a",
-			"the", "have", "be", "its", "here");
 
 	@Override
 	public Tree compress(Tree tree, CoreMap sentence) {
 		tree = getLowestLeftmostSWithNPVP(tree);
-		tree = removeLowContentNodes(tree);
 		// TODO: Currently not used because it makes the performance worse
 		// tree = shortenIterativelyRule1(tree);
 		tree = shortenIterativelyRule2(tree);
@@ -70,74 +61,6 @@ public class HedgeTrimmer extends TreeCompressor {
 		return result;
 	}
 
-	private Tree removeLowContentNodes(Tree tree) {
-		tree = tree.prune(new Filter<Tree>() {
-
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean accept(Tree tree) {
-				CoreLabel label = (CoreLabel) tree.label();
-				String lemma = label.lemma();
-				if (TRIMMED_LEMMAS.contains(lemma)) {
-					return false;
-				}
-				return true;
-			}
-
-		});
-
-		tree = tree.prune(new Filter<Tree>() {
-
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean accept(Tree tree) {
-				// Remove [PP … [NNP [X] …] …] where X is a tagged as part of a
-				// time expression
-				if (tree.value().equals("PP")) {
-					// Only allow at most 3 leaves to be removed. Otherwise,
-					// large parts of the sentence might be trimmed by accident.
-					if (tree.getLeaves().size() <= 3) {
-						Stack<Tree> treeStack = new Stack<>();
-						treeStack.addAll(Arrays.asList(tree.children()));
-						while (!treeStack.isEmpty()) {
-							Tree child = treeStack.pop();
-							if (!child.value().equals("PP")) {
-								CoreLabel childLabel = (CoreLabel) child
-										.label();
-								String ner = childLabel.ner();
-								if (Objects.equals(ner, "DATE")) {
-									logTrimming(tree, "Date");
-									return false;
-								} else {
-									treeStack.addAll(Arrays.asList(child
-											.children()));
-								}
-							}
-						}
-					}
-				}
-				// Remove [NNP [X]] where X is a tagged as part of a
-				// time expression
-				if (tree.value().equals("NNP")) {
-					CoreLabel childLabel = (CoreLabel) tree.firstChild()
-							.label();
-					String ner = childLabel.ner();
-					if (Objects.equals(ner, "DATE")) {
-						logTrimming(tree, "Date");
-						return false;
-					}
-				}
-
-				return true;
-			}
-
-		});
-
-		return tree;
-	}
-
 	@SuppressWarnings("unused")
 	private Tree shortenIterativelyRule1(Tree fullTree) {
 		List<CoreLabel> candidates = new ArrayList<>();
@@ -160,9 +83,7 @@ public class HedgeTrimmer extends TreeCompressor {
 			BlacklistTreeFilter treeFilter = new BlacklistTreeFilter(candidate);
 			fullTree = fullTree.prune(treeFilter);
 
-			for (Tree prunedTree : treeFilter.getPrunedTrees()) {
-				logTrimming(prunedTree, "Iterative Shortening Rule 1");
-			}
+			logTrimming(treeFilter, "Iterative Shortening Rule 1");
 		}
 
 		return fullTree;

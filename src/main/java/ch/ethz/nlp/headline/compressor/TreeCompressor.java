@@ -13,6 +13,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.trees.LabeledScoredTreeNode;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -30,7 +31,10 @@ public abstract class TreeCompressor implements SentencesCompressor {
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			Tree oldTree = sentence.get(TreeAnnotation.class);
 			Tree newTree = compress(oldTree, sentence);
-
+			if (newTree == null) {
+				// Use an empty tree
+				newTree = new LabeledScoredTreeNode();
+			}
 			// Rebuild the list of labels from the modified tree
 			List<CoreLabel> coreLabels = new ArrayList<>();
 			for (Label label : newTree.yield()) {
@@ -48,6 +52,12 @@ public abstract class TreeCompressor implements SentencesCompressor {
 	 * just the tree.
 	 */
 	protected abstract Tree compress(Tree tree, CoreMap sentence);
+
+	protected void logTrimming(BlacklistTreeFilter filter, String rule) {
+		for (Tree prunedTree : filter.getPrunedTrees()) {
+			logTrimming(prunedTree, rule);
+		}
+	}
 
 	protected void logTrimming(Tree trimmedTree, String rule) {
 		logTrimming(trimmedTree.yieldWords(), rule);

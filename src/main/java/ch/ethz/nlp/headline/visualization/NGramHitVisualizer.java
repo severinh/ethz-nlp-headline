@@ -31,13 +31,15 @@ public class NGramHitVisualizer {
 	private final Set<String> modelUnigrams;
 	private final Set<String> modelBigrams;
 	private boolean showPerSentenceRecall = false;
-	private final RougeN rouge1 = new RougeN(1);
-	private final RougeN rouge2 = new RougeN(2);
+	private final RougeN rouge1;
+	private final RougeN rouge2;
 
 	public NGramHitVisualizer(List<Annotation> modelAnnotations) {
 		this.modelAnnotations = ImmutableList.copyOf(modelAnnotations);
 		this.modelUnigrams = new HashSet<>();
 		this.modelBigrams = new HashSet<>();
+		this.rouge1 = new RougeN(modelAnnotations, 1);
+		this.rouge2 = new RougeN(modelAnnotations, 2);
 
 		for (Annotation annotation : modelAnnotations) {
 			CoreNLPUtil.ensureLemmaAnnotation(annotation);
@@ -73,10 +75,8 @@ public class NGramHitVisualizer {
 			if (isShowPerSentenceRecall()) {
 				Annotation sentenceAnnotation = CoreNLPUtil
 						.sentencesToAnnotation(ImmutableList.of(sentence));
-				double rouge1Recall = rouge1.compute(modelAnnotations,
-						sentenceAnnotation);
-				double rouge2Recall = rouge2.compute(modelAnnotations,
-						sentenceAnnotation);
+				double rouge1Recall = rouge1.compute(sentenceAnnotation);
+				double rouge2Recall = rouge2.compute(sentenceAnnotation);
 				String rouge1String = String.format("%.2f", rouge1Recall)
 						.substring(1);
 				String rouge2String = String.format("%.2f", rouge2Recall)

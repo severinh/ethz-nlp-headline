@@ -5,20 +5,17 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.function.Abs;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.ethz.nlp.headline.Dataset;
 import ch.ethz.nlp.headline.Document;
-import ch.ethz.nlp.headline.Model;
 import ch.ethz.nlp.headline.Task;
 import ch.ethz.nlp.headline.cache.AnnotationCache;
 import ch.ethz.nlp.headline.cache.AnnotationProvider;
 import ch.ethz.nlp.headline.cache.RichAnnotationProvider;
-import ch.ethz.nlp.headline.cache.SlimAnnotationProvider;
-import ch.ethz.nlp.headline.duc2004.Duc2004Dataset;
+import ch.ethz.nlp.headline.duc.Duc2004Dataset;
 import ch.ethz.nlp.headline.preprocessing.CombinedPreprocessor;
 import ch.ethz.nlp.headline.preprocessing.ContentPreprocessor;
 import ch.ethz.nlp.headline.selection.SentenceFeatureExtractor;
@@ -26,6 +23,7 @@ import ch.ethz.nlp.headline.selection.SentenceScore;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
 import ch.ethz.nlp.headline.util.CoreNLPUtil;
 import ch.ethz.nlp.headline.util.RougeN;
+import ch.ethz.nlp.headline.util.RougeNFactory;
 
 import com.google.common.collect.ImmutableList;
 
@@ -39,13 +37,14 @@ public class FeatureWeightRegression {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(FeatureWeightRegression.class);
 
-	private final RougeN rouge = new RougeN(1);
+	private final RougeNFactory rougeFactory = new RougeNFactory(1);
 	private final TfIdfProvider tfIdfProvider;
 	private final AnnotationProvider annotationProvider;
 
 	private final ContentPreprocessor preprocessor;
 
-	public FeatureWeightRegression(AnnotationProvider annotationProvider, TfIdfProvider tfIdfProvider) {
+	public FeatureWeightRegression(AnnotationProvider annotationProvider,
+			TfIdfProvider tfIdfProvider) {
 		this.tfIdfProvider = tfIdfProvider;
 		this.preprocessor = CombinedPreprocessor.all();
 		this.annotationProvider = annotationProvider;
@@ -57,19 +56,16 @@ public class FeatureWeightRegression {
 		List<SentenceScore> featureValues = new ArrayList<>();
 		// for every sentence, we keep its ROUGE-1 recall
 		List<Double> rougeValues = new ArrayList<>();
-		
+
 		for (Task task : tasks) {
 			Document document = task.getDocument();
 			String documentContent = document.getContent();
 			documentContent = preprocessor.preprocess(documentContent);
 
-			List<Annotation> models = new ArrayList<>();
-			for (Model model : task.getModels()) {
-				String modelContent = model.getContent();
-				models.add(annotationProvider.getAnnotation(modelContent));
-			}
-
-			Annotation documentAnnotation = annotationProvider.getAnnotation(documentContent);
+			RougeN rouge = rougeFactory.make(task.getModels(),
+					annotationProvider);
+			Annotation documentAnnotation = annotationProvider
+					.getAnnotation(documentContent);
 			SentenceFeatureExtractor extractor = new SentenceFeatureExtractor(
 					tfIdfProvider, documentAnnotation);
 			List<CoreMap> sentences = documentAnnotation
@@ -80,16 +76,16 @@ public class FeatureWeightRegression {
 				Annotation sentenceAnnotation = CoreNLPUtil
 						.sentencesToAnnotation(ImmutableList.of(sentence));
 
-					double recall = rouge.compute(models, sentenceAnnotation);
-					rougeValues.add(recall);
-	
-					// calculate sentence features
-					SentenceScore features = extractor
-							.extractFeaturesForSentence(sentence);
-					featureValues.add(features);
+				double recall = rouge.compute(sentenceAnnotation);
+				rougeValues.add(recall);
+
+				// calculate sentence features
+				SentenceScore features = extractor
+						.extractFeaturesForSentence(sentence);
+				featureValues.add(features);
 			}
 		}
-		
+
 		// prepare data in double arrays...
 		Double[] ys = rougeValues.toArray(new Double[rougeValues.size()]);
 		double[] y = ArrayUtils.toPrimitive(ys);
@@ -127,11 +123,11 @@ public class FeatureWeightRegression {
 		for (int fi = 0; fi < featureNames.size(); fi++) {
 			sb.append(featureNames.get(fi));
 			sb.append(" = ");
-			sb.append(weights[fi+1]); // skip "offset"
+			sb.append(weights[fi + 1]); // skip "offset"
 			sb.append("\n");
 		}
 		LOG.info("Determined weights:\n " + sb.toString());
-		
+
 	}
 
 	public static void main(String[] args) {
@@ -139,9 +135,7 @@ public class FeatureWeightRegression {
 		List<Task> tasks = dataset.getTasks();
 		AnnotationProvider richCache = new AnnotationCache(
 				new RichAnnotationProvider());
-		AnnotationProvider slimCache = new AnnotationCache(
-				new SlimAnnotationProvider());
-		
+
 		TfIdfProvider tfIdfProvider = TfIdfProvider.of(richCache, dataset);
 		FeatureWeightRegression regression = new FeatureWeightRegression(
 				richCache, tfIdfProvider);
