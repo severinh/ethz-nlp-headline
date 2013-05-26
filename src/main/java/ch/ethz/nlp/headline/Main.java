@@ -18,6 +18,7 @@ import ch.ethz.nlp.headline.generators.BaselineGenerator;
 import ch.ethz.nlp.headline.generators.CoreNLPGenerator;
 import ch.ethz.nlp.headline.generators.Generator;
 import ch.ethz.nlp.headline.generators.HedgeTrimmerGenerator;
+import ch.ethz.nlp.headline.generators.TrainedGenerator;
 import ch.ethz.nlp.headline.selection.TfIdfProvider;
 import ch.ethz.nlp.headline.visualization.PeerInspector;
 
@@ -47,6 +48,7 @@ public class Main {
 		// generators.add(new PosFilteredGenerator());
 		// generators.add(new CombinedSentenceGenerator(tfIdfProvider));
 		generators.add(new HedgeTrimmerGenerator(richCache, tfIdfProvider));
+		generators.add(new TrainedGenerator(richCache, tfIdfProvider));
 
 		Multimap<Task, Peer> peersMap = LinkedListMultimap.create();
 

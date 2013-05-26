@@ -60,19 +60,17 @@ public class RougeN {
 		return (double) num / (double) denominator;
 	}
 
-	public double compute(CoreLabel candidateLabel) {
+	public boolean contains(CoreLabel candidateLabel) {
 		if (n > 1) {
-			return 0;
+			return false;
 		}
 
 		String candidateLemma = candidateLabel.lemma();
-		int num = 0;
 		for (Set<String> referenceNGram : referencesNGrams) {
 			if (referenceNGram.contains(candidateLemma)) {
-				num++;
+				return true;
 			}
 		}
-		return (double) num / (double) denominator;
+		return false;
 	}
-
 }
