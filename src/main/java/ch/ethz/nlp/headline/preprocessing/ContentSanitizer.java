@@ -5,12 +5,12 @@ import java.util.regex.Pattern;
 public class ContentSanitizer implements ContentPreprocessor {
 
 	// Drop prefixes such as: BRUSSELS, Belgium (AP) -
-	private static final Pattern PREFIX_PATTERN_1 = Pattern
-			.compile(".+ \\((AP|Xinhua)\\) (--|_|-) ");
+	private static final Pattern PREFIX_PATTERN_1 = Pattern.compile(
+			"^.+ \\((AP|Xinhua)\\) (--|_|-) ", Pattern.MULTILINE);
 
 	// Drop prefixes such as WASHINGTON _
-	private static final Pattern PREFIX_PATTERN_2 = Pattern
-			.compile("([A-Z]| )+(, \\w+)? _ ");
+	private static final Pattern PREFIX_PATTERN_2 = Pattern.compile(
+			"^\\s*([A-Z]| )+(, \\w+)? _ ", Pattern.MULTILINE);
 
 	@Override
 	public String preprocess(String content) {
