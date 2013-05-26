@@ -27,8 +27,8 @@ public class SVMNodeBuilder {
 		features.add(new NamedEntityFeature("LOCATION"));
 		features.add(new TfIdfFeature(tfIdfMap));
 
-		GrammaticalRelationProvider provider = new GrammaticalRelationProvider(
-				graph);
+		GrammaticalRelationProvider provider = GrammaticalRelationProvider
+				.ofLabels(graph);
 		for (GrammaticalRelation relation : EnglishGrammaticalRelations
 				.values()) {
 			features.add(new GrammaticalRelationFeature(provider, relation));

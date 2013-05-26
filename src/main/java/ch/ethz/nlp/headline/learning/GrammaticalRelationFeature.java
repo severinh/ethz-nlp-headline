@@ -1,6 +1,6 @@
 package ch.ethz.nlp.headline.learning;
 
-import java.util.Set;
+import java.util.Collection;
 
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.GrammaticalRelation;
@@ -19,7 +19,8 @@ public class GrammaticalRelationFeature implements Feature {
 
 	@Override
 	public double computeValue(IndexedWord label) {
-		Set<GrammaticalRelation> relations = provider.getRelations(label);
+		Collection<GrammaticalRelation> relations = provider
+				.getRelations(label);
 		return (relations.contains(relation)) ? 1.0 : 0.0;
 	}
 
