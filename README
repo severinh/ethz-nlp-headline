@@ -12,21 +12,6 @@ This project uses the Maven build system. On Ubuntu, install it using
 
 $ sudo apt-get install maven
 
-Dataset
--------
-
-The DUC 2004 dataset may not be bundled with this. Ensure that it is located
-in the duc2004 folder. That is, the directory structure should look as follows:
-
-pom.xml
-eval
-[...]
-duc2004
- - docs
- - eval
-   - models
-   - peers
-
 Usage
 -----
 
