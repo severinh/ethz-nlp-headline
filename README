@@ -1,6 +1,43 @@
+Automatic Headline Generation
+=============================
+
 Prerequisites
 -------------
 
 ROUGE depends on the XML::DOM perl module. On Ubuntu, install it using 
 
 $ sudo apt-get install libxml-dom-perl
+
+This project uses the Maven build system. On Ubuntu, install it using
+
+$ sudo apt-get install maven
+
+Dataset
+-------
+
+The DUC 2004 dataset may not be bundled with this. Ensure that it is located
+in the duc2004 folder. That is, the directory structure should look as follows:
+
+pom.xml
+eval
+[...]
+duc2004
+ - docs
+ - eval
+   - models
+   - peers
+
+Usage
+-----
+
+Run the eval script to generate the headlines for all 500 DUC 2004 documents.
+It computes and outputs the ROUGE score at the end.
+
+$ ./eval
+
+Annotation Cache
+----------------
+
+Note that this distribution may not come with the cached annotations. Thus,
+the initial run may take a long time (about an hour). Any subsequent runs
+will only take 15 to 30 seconds.
