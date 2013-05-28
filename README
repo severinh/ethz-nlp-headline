@@ -15,8 +15,8 @@ $ sudo apt-get install maven
 Usage
 -----
 
-Run the eval script to generate the headlines for all 500 DUC 2004 documents.
-It computes and outputs the ROUGE score at the end.
+Run the eval script to generate the headlines for all 500 documents in the DUC
+2004 dataset. It computes and outputs the ROUGE score at the end.
 
 $ ./eval
 
@@ -31,6 +31,6 @@ Sentence Compression Model
 --------------------------
 
 The file 'rouge.model' in the root directory contains the model used for
-sentence compression. It has been trained on the DUC2003 data set using
+sentence compression. It has been trained on the DUC 2003 data set using
 SVM regression. To generate it on your own, run the RougeScoreRegression class 
 in the 'learning' package.
