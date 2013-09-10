@@ -1,6 +1,8 @@
 Automatic Headline Generation
 =============================
 
+[![Build Status](https://travis-ci.org/severinh/ethz-nlp-headline.png?branch=master)](https://travis-ci.org/severinh/ethz-nlp-headline)
+
 This project aims to automatically generate headlines of news articles in the
 [DUC 2004](http://duc.nist.gov/duc2004/) corpus.
 It's purpose was to get hands-on experience in the
