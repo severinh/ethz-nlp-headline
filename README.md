@@ -6,11 +6,15 @@ Prerequisites
 
 ROUGE depends on the XML::DOM perl module. On Ubuntu, install it using 
 
-$ sudo apt-get install libxml-dom-perl
+```bash
+sudo apt-get install libxml-dom-perl
+```
 
 This project uses the Maven build system. On Ubuntu, install it using
 
-$ sudo apt-get install maven
+```bash
+sudo apt-get install maven
+```
 
 Usage
 -----
@@ -18,7 +22,9 @@ Usage
 Run the eval script to generate the headlines for all 500 documents in the DUC
 2004 dataset. It computes and outputs the ROUGE score at the end.
 
-$ ./eval
+```bash
+./eval
+```
 
 Annotation Cache
 ----------------
